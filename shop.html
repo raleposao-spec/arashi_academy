@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Arashi Shop</title>
+<meta name="description" content="Outfits, jutsu, weapons and extras for your Arashi Academy ninja, and the rank that unlocks each one.">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: page header with the "who are you" controls, category tabs, then a responsive card grid of items. */
+:root{
+  --ink:#120f0d; --paper:#f3eadb; --muted:#b0a28d; --card:#1b1612; --line:rgba(243,234,219,.14);
+  --gold:#e7b54a; --vermilion:#d4452f;
+  --display:"Shippori Mincho B1","Hiragino Mincho ProN",Georgia,serif;
+  --ui:"Zen Kaku Gothic New","Hiragino Sans",system-ui,sans-serif; --mono:"DM Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--ink);color:var(--paper);font-family:var(--ui)}
+body{background:radial-gradient(1200px 500px at 50% -120px,#3a2232 0%,rgba(18,15,13,0) 70%),var(--ink)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding-top:calc(var(--navh) + 40px);padding-bottom:80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);font-weight:700;margin:0}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(34px,5.5vw,58px);margin:6px 0 10px;line-height:1.02;text-wrap:balance}
+.lead{max-width:60ch;color:#d6cab6;line-height:1.6;margin:0}
+.who{margin-top:28px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;background:#1b1612;border:1px solid var(--line);border-radius:12px;padding:12px}
+.who .lbl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:0 4px}
+.seg{display:flex;gap:4px;flex-wrap:wrap}
+.seg button{border:1px solid var(--line);background:transparent;border-radius:7px;padding:7px 11px;font-size:13px;font-weight:700;letter-spacing:.06em;cursor:pointer;color:var(--muted)}
+.seg button:hover{color:var(--paper)}
+.seg button[aria-pressed="true"]{color:var(--ink);border-color:transparent}
+.find{display:flex;gap:6px;align-items:center;margin-left:auto;min-width:0;flex:1 1 260px;max-width:380px}
+.find span{color:var(--gold);font-family:var(--display);font-weight:800;font-size:18px}
+.find input{flex:1;min-width:0;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:7px;padding:8px 10px;font-size:15px}
+.find button{border:0;border-radius:7px;padding:9px 12px;background:rgba(255,255,255,.1);font-weight:700;cursor:pointer}
+.status{font-size:13.5px;color:#d6cab6;margin:10px 2px 0;min-height:1.4em}
+.tabs{display:flex;gap:6px;margin:30px 0 16px;flex-wrap:wrap;align-items:center}
+.tabs button{border:0;background:transparent;font-family:var(--display);font-weight:800;font-size:22px;color:#7d7262;cursor:pointer;padding:4px 10px 6px;border-bottom:3px solid transparent}
+.tabs button[aria-selected="true"]{color:var(--paper);border-bottom-color:var(--gold)}
+.tabs .clans{margin-left:auto;display:flex;gap:4px;flex-wrap:wrap}
+.tabs .clans button{font-family:var(--ui);font-size:13px;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:7px;padding:6px 10px;display:inline-flex;gap:6px;align-items:center}
+.tabs .clans button i{width:10px;height:10px;border-radius:2px;display:inline-block}
+.tabs .clans button[aria-pressed="true"]{color:var(--paper);border-color:var(--gold)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.item .art{aspect-ratio:4/3;display:grid;place-items:center;position:relative;max-width:100%}
+.item .art svg{width:46%;height:auto}
+.item .lock{position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.55);display:grid;place-items:center}
+.item .body{padding:14px 14px 16px;display:flex;flex-direction:column;gap:8px;flex:1}
+.item h3{margin:0;font-family:var(--display);font-weight:800;font-size:20px;line-height:1.15}
+.item p{margin:0;font-size:13.5px;color:#cdbfaa;line-height:1.5}
+.pill{align-self:flex-start;font-size:10.5px;font-weight:700;letter-spacing:.12em;padding:3px 7px;border-radius:4px;color:var(--ink)}
+.item .foot{margin-top:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding-top:6px}
+.item .ok{font-size:13px;font-weight:700;color:#7fd3a6}
+.item .need{font-size:13px;font-weight:700;color:var(--gold);text-decoration:none}
+.item .need:hover{text-decoration:underline}
+.item .buy{margin-left:auto;font-size:12.5px;font-weight:700;padding:7px 10px;border-radius:7px;background:rgba(255,255,255,.08);color:var(--paper);text-decoration:none}
+.item .buy:not([aria-disabled]):hover{background:var(--vermilion)}
+.item.locked .art{filter:grayscale(1) brightness(.55)}
+.item.locked h3{color:#bdb2a2}
+.note{margin-top:34px;color:var(--muted);font-size:13.5px;line-height:1.6;max-width:70ch}
+.note a{color:var(--gold)}
+@media (max-width:620px){ .find{margin-left:0;max-width:none} .tabs .clans{margin-left:0} }
+</style>
+</head>
+<body>
+<script src="assets/site.js"></script>
+<div class="wrap">
+  <p class="eyebrow">The Armory</p>
+  <h1>Gear for your ninja</h1>
+  <p class="lead">Your rank unlocks what you can wear and use in the daily fights. Pick a rank, or type your @handle, to see what is yours and what comes next.</p>
+
+  <div class="who" role="group" aria-label="Show gear for">
+    <span class="lbl">I am</span>
+    <div class="seg" id="rankSeg"></div>
+    <form class="find" id="find" autocomplete="off">
+      <span aria-hidden="true">@</span>
+      <label for="q" class="sr" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Your Instagram handle</label>
+      <input id="q" placeholder="your_handle" spellcheck="false" autocapitalize="off">
+      <button type="submit">Check</button>
+    </form>
+  </div>
+  <p class="status" id="status" aria-live="polite"></p>
+
+  <div class="tabs" role="tablist" aria-label="Category">
+    <button role="tab" data-cat="outfits" aria-selected="true">Outfits</button>
+    <button role="tab" data-cat="jutsu" aria-selected="false">Jutsu</button>
+    <button role="tab" data-cat="weapons" aria-selected="false">Weapons</button>
+    <button role="tab" data-cat="extras" aria-selected="false">Extras</button>
+    <div class="clans" id="clanSeg" hidden></div>
+  </div>
+  <div class="grid" id="grid"></div>
+
+  <p class="note">Any locked outfit or jutsu can also be bought once for $2 without a monthly rank. Write your @handle in the Ko-fi message and it shows up on <a href="ninja.html">your ninja</a>. Want everything at once? <a href="ranks.html">Compare ranks</a>.</p>
+</div>
+<script src="assets/items.js"></script>
+<script>
+(function(){
+const go=()=>{ if(!window.ARASHI||!window.ITEMS) return setTimeout(go,50); start(); }; go();
+function start(){
+  const A=ARASHI, I=ITEMS, $=id=>document.getElementById(id);
+  let rank=0, cat='outfits', clan=2;
+  const cap=s=>s[0]+s.slice(1).toLowerCase();
+  const ICON={
+    outfits:c=>`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M34 14 L50 24 L66 14 L86 30 L76 44 L70 40 L70 88 L30 88 L30 40 L24 44 L14 30 Z" fill="${c}" stroke="#120f0d" stroke-width="4" stroke-linejoin="round"/><path d="M40 18 L50 50 L60 18" fill="none" stroke="#120f0d" stroke-width="4"/><rect x="30" y="56" width="40" height="8" fill="#120f0d" opacity=".55"/></svg>`,
+    jutsu:c=>`<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="34" fill="none" stroke="${c}" stroke-width="6"/><path d="M56 16 L32 54 L50 54 L42 86 L70 44 L52 44 Z" fill="${c}" stroke="#120f0d" stroke-width="3" stroke-linejoin="round"/></svg>`,
+    weapons:c=>`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 8 L60 46 L50 58 L40 46 Z" fill="${c}" stroke="#120f0d" stroke-width="4" stroke-linejoin="round"/><rect x="45" y="58" width="10" height="26" fill="#3a2a1e" stroke="#120f0d" stroke-width="4"/><circle cx="50" cy="90" r="6" fill="none" stroke="${c}" stroke-width="4"/></svg>`,
+    extras:c=>`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M20 30 Q50 6 80 30 Q86 64 50 90 Q14 64 20 30 Z" fill="${c}" stroke="#120f0d" stroke-width="4"/><path d="M32 46 Q40 40 46 48 M54 48 Q60 40 68 46" fill="none" stroke="#120f0d" stroke-width="5" stroke-linecap="round"/><path d="M50 22 L50 34" stroke="#d4452f" stroke-width="4"/></svg>`,
+  };
+  const BG=['#2a2a2e','#173528','#3a1814','#3a2c10'];
+  $('rankSeg').innerHTML=A.RANKS.map((r,i)=>`<button data-r="${i}" aria-pressed="${i===rank}" style="${i===rank?`background:${r.col}`:''}">${r.n}</button>`).join('');
+  $('clanSeg').innerHTML=A.CLANS.map((c,i)=>`<button data-c="${i}" aria-pressed="${i===clan}"><i style="background:${c.c}"></i>${c.name}</button>`).join('');
+  function setRank(r){ rank=r; $('rankSeg').querySelectorAll('button').forEach((b,i)=>{ b.setAttribute('aria-pressed',i===r); b.style.background=i===r?A.RANKS[i].col:''; }); render(); }
+  function list(){ if(cat!=='jutsu') return I[cat]; const name=A.CLANS[clan].name; return [...I.jutsu[name], ...I.jutsu.Sennin]; }
+  function render(){
+    $('clanSeg').hidden=cat!=='jutsu';
+    const accent=cat==='jutsu'?A.CLANS[clan].c2:'#e7b54a';
+    $('grid').innerHTML=list().map(([name,need,desc])=>{ const lock=need>rank, R=A.RANKS[need], buyable=lock&&(cat==='outfits'||cat==='jutsu');
+      return `<article class="item${lock?' locked':''}">
+        <div class="art" style="background:radial-gradient(circle at 50% 40%,${BG[need]} 0%,#15110e 75%)">${ICON[cat](lock?'#8d8478':accent)}${lock?'<span class="lock" aria-label="Locked"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f3eadb" stroke-width="2.5"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>':''}</div>
+        <div class="body"><span class="pill" style="background:${R.col}">${R.n}</span><h3>${name}</h3><p>${desc}</p>
+          <div class="foot">${lock?`<a class="need" href="ranks.html">Unlock at ${cap(R.n)} →</a>${buyable?`<a class="buy" data-kofi="/shop" data-soon="keep">Buy once · $2</a>`:''}`:'<span class="ok">✓ Yours</span>'}</div></div>
+      </article>`; }).join('');
+    A.wireKofi($('grid'));
+  }
+  $('rankSeg').onclick=e=>{ const b=e.target.closest('button'); if(b){ $('status').textContent=''; setRank(+b.dataset.r); } };
+  $('clanSeg').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; clan=+b.dataset.c; $('clanSeg').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b)); render(); };
+  document.querySelectorAll('[role=tab]').forEach(t=>t.onclick=()=>{ cat=t.dataset.cat; document.querySelectorAll('[role=tab]').forEach(x=>x.setAttribute('aria-selected',x===t)); render(); });
+  $('find').onsubmit=async e=>{ e.preventDefault(); const k=$('q').value.trim().toLowerCase().replace(/^@+/,''); if(!k) return;
+    try{ const all=await A.roster(); const p=all.find(x=>x.handle===k);
+      if(!p){ $('status').textContent=`@${k} isn't seated yet. Follow the account and your seat appears within a day.`; return; }
+      clan=p.clan; $('clanSeg').querySelectorAll('button').forEach((x,i)=>x.setAttribute('aria-pressed',i===clan));
+      $('status').innerHTML=`@${p.handle} is <b>${A.RANKS[p.rank].n}</b> in the <b>${A.CLANS[p.clan].name}</b> clan. <a href="ninja.html?h=${encodeURIComponent(p.handle)}" style="color:var(--gold)">See your ninja →</a>`;
+      setRank(p.rank);
+    }catch(err){ $('status').textContent='Could not load the follower list. Try again in a moment.'; } };
+  const h=new URLSearchParams(location.search).get('h'); if(h){ $('q').value=h; $('find').requestSubmit(); }
+  render();
+}
+})();
+</script>
+</body>
+</html>
