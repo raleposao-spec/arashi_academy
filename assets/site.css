@@ -31,3 +31,11 @@ dialog.unlock::backdrop{background:rgba(8,6,5,.7);backdrop-filter:blur(3px)}
 .u-copy{border:1px solid rgba(243,234,219,.2);background:none;color:#f3eadb;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:12px}
 .u-pay{display:inline-block;margin-top:9px;background:#e7b54a;color:#120f0d;font-weight:700;text-decoration:none;border-radius:8px;padding:9px 14px}
 .u-err{margin:6px 0 0;color:#ff8a76;font-size:13px;min-height:0}
+
+.unlock .u-ok{display:flex;gap:8px;align-items:flex-start;margin-top:10px;font-size:13px;line-height:1.45;color:#d6cab6;cursor:pointer}
+.unlock .u-ok input{margin-top:3px;accent-color:#e7b54a}
+.unlock .u-ok a{color:#e7b54a}
+.u-pay.is-off{opacity:.4;cursor:not-allowed}
+.sitefoot{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px;padding:26px 16px 34px;font:13px/1.5 "Zen Kaku Gothic New",system-ui,sans-serif;color:#b0a28d;border-top:1px solid rgba(243,234,219,.1);text-align:center}
+.sitefoot a{color:#e7b54a}
+.sitefoot img{border-radius:50%}

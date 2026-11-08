@@ -17,7 +17,7 @@ export function publicStatus(rec, now = Date.now()) {
   if (!rec || !rec.verified) return { rank: 0, items: [], verified: false };
   const until = rec.rankUntil || 0;
   const active = until > now;
-  return { rank: active ? rec.rank : 0, rankUntil: until, items: rec.items || [], verified: true, clan: rec.clan ?? null, seat: active ? rec.seat || null : null };
+  return { rank: active ? rec.rank : 0, rankUntil: until, items: rec.items || [], verified: true, clan: rec.clan ?? null, seat: active ? rec.seat || null : null, look: rec.look || null };
 }
 
 export const isAdmin = req => { const k = Netlify.env.get('ADMIN_KEY'); return !!k && req.headers.get('x-admin-key') === k; };
@@ -50,3 +50,6 @@ export async function assignSeat(store, rec, now = Date.now()) {
   else { const [a, b] = ZONES[rank]; for (let row = a; row <= b; row++) for (let s = 1; s <= rowCap(row); s++) if (!taken.has(`${rec.clan}:${row}:${s}`)) { rec.seat = { rank, row, seat: s }; return rec; } }
   return rec; // zone full: stays in their Genin seat
 }
+
+const ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+export const newCode = () => 'ARASHI-' + [...crypto.getRandomValues(new Uint8Array(5))].map(b => ABC[b % ABC.length]).join('');

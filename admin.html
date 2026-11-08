@@ -29,14 +29,14 @@ code{font-family:"DM Mono",ui-monospace,monospace;color:var(--gold)}
 <body>
 <main>
   <h1><img src="assets/brand/arashi-badge-180.png" alt="">Academy Admin</h1>
-  <p class="help">Ko-fi buyers show up here. Check your Instagram DMs: when a buyer sent you their code from the account in the list, press <b>Confirm</b>. Only confirmed buyers get their rank on the site.</p>
+  <p class="help">Ko-fi buyers show up here. Check your Instagram DMs: when a buyer sent you their code from the account in the list, press <b>Confirm</b>. Only confirmed buyers get their rank, seat and gear. If someone paid with just their @handle (no code), Confirm gives them a code: DM it back to them, they need it to save their look on My Ninja.</p>
   <form class="key" id="kf"><input id="key" type="password" placeholder="Admin key" autocomplete="current-password" style="flex:1"><button class="go">Open</button></form>
   <p id="msg" role="status"></p>
   <h2>Waiting for Instagram confirmation</h2><div id="pending"></div>
   <h2>Payments without a handle</h2><div id="unmatched"></div>
   <h2>Confirmed ninjas</h2><div id="verified"></div>
 </main>
-<script src="assets/site.js?v=8"></script>
+<script src="assets/site.js?v=9"></script>
 <script>
 const A = ARASHI, $ = id => document.getElementById(id), RN = ['Genin', 'Chunin', 'Jonin', 'Sennin'];
 let KEY = ''; try { KEY = sessionStorage.getItem('arashi.admin') || ''; } catch (e) {}

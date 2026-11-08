@@ -8,7 +8,7 @@
 <meta property="og:image" content="https://raleposao-spec.github.io/arashi_academy/assets/brand/arashi-badge-1024.png">
 <link rel="icon" type="image/png" href="assets/brand/arashi-mark-64.png">
 <link rel="apple-touch-icon" href="assets/brand/arashi-badge-180.png">
-<link rel="stylesheet" href="assets/site.css?v=8">
+<link rel="stylesheet" href="assets/site.css?v=9">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap">
@@ -77,6 +77,7 @@ button,input,select{font:inherit;color:inherit}
 .save button{border:0;border-radius:8px;padding:11px 16px;font-weight:700;cursor:pointer;background:var(--vermilion);color:#fff}
 .save button.ghost{background:rgba(255,255,255,.08);color:var(--paper)}
 .save button:disabled{opacity:.45;cursor:default}
+.save input{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:8px;padding:10px 11px;font-family:var(--mono);font-size:14px;width:170px;max-width:100%}
 .save small{color:var(--muted);font-size:12.5px;line-height:1.5;flex-basis:100%}
 .preview{margin-top:12px;font-size:13.5px;line-height:1.5;background:rgba(212,69,47,.12);border:1px solid rgba(212,69,47,.4);border-radius:9px;padding:10px 12px}
 .preview a{color:var(--gold);font-weight:700}
@@ -94,7 +95,7 @@ button,input,select{font:inherit;color:inherit}
 </style>
 </head>
 <body>
-<script src="assets/site.js?v=8"></script>
+<script src="assets/site.js?v=9"></script>
 <main class="page">
   <section class="stage" aria-label="Your ninja in 3D">
     <canvas id="cv" aria-label="3D view of your ninja. Drag to turn it."></canvas>
@@ -140,6 +141,7 @@ button,input,select{font:inherit;color:inherit}
       <div class="save">
         <button id="bSave" type="button">Save loadout</button>
         <button id="bReset" type="button" class="ghost">Reset</button>
+        <input id="code" placeholder="Your ARASHI- code" autocomplete="off" spellcheck="false" autocapitalize="characters" hidden>
         <small id="saveNote">Saved in this browser, on this device.</small>
       </div>
     </div>
@@ -153,9 +155,9 @@ button,input,select{font:inherit;color:inherit}
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
-<script src="assets/items.js?v=8"></script>
-<script src="assets/ninja.js?v=8"></script>
-<script src="assets/fight.js?v=8"></script>
+<script src="assets/items.js?v=9"></script>
+<script src="assets/ninja.js?v=9"></script>
+<script src="assets/fight.js?v=9"></script>
 <script>
 (function () {
 const A = ARASHI, I = ITEMS, $ = id => document.getElementById(id), T = THREE;
@@ -187,7 +189,8 @@ function defaults() {
     hair: NINJA.HAIRSTYLES[h % 6], hairColor: NINJA.HAIRS[(h >>> 4) % NINJA.HAIRS.length], skin: NINJA.SKINS[(h >>> 9) % 4] };
 }
 const key = () => who ? 'arashi.loadout.' + who.handle : null;
-function load() { look = defaults(); saved = null; if (!key()) return; try { const s = JSON.parse(localStorage.getItem(key()) || 'null'); if (s) { saved = s; Object.assign(look, s); } } catch (e) {} sanitize(look); }
+function load() { look = defaults(); saved = null; if (!key()) return; try { const s = JSON.parse(localStorage.getItem(key()) || 'null'); if (s) { saved = s; Object.assign(look, s); } } catch (e) {}
+  if (who && who.serverLook) { Object.assign(look, who.serverLook); saved = saved || who.serverLook; } sanitize(look); }
 function sanitize(L) { // drop anything the rank no longer unlocks
   SLOTS.forEach(([k, , list]) => { if (L[k] == null) return; const it = list().find(x => x.name === L[k] || (x.val && L[k] === x.val)); if (!it || isLocked(it)) L[k] = defaults()[k] ?? null; }); }
 function itemOf(k) { const s = SLOTS.find(x => x[0] === k); const v = look[k]; return v == null ? null : s[2]().find(x => x.name === v || (x.val && v === x.val)); }
@@ -269,13 +272,24 @@ function renderSlots() {
     note.innerHTML = `Previewing ${L.map(x => '<b>' + x.name + '</b>').join(', ')}. ${L.length > 1 ? 'They unlock' : 'It unlocks'} at <b>${cap(A.RANKS[top].n)}</b>. <a href="ranks.html">See ranks →</a>`; }
   else note.hidden = true;
   $('bSave').disabled = !who || L.length > 0;
-  $('saveNote').textContent = !who ? 'Find your @handle above to save a loadout.' : L.length ? 'Take off the locked items to save.' : (saved ? 'Saved in this browser. ' : 'Saved in this browser, on this device. ') + 'Saving to your fights comes when accounts open.';
+  const member = who && who.verified;
+  $('code').hidden = !member; if (member && !$('code').value) try { $('code').value = localStorage.getItem('arashi.code.' + who.handle) || ''; } catch (e) {}
+  $('saveNote').textContent = !who ? 'Find your @handle above to save a loadout.' : L.length ? 'Take off the locked items to save.'
+    : member ? 'Members: enter the ARASHI- code you sent us on Instagram, then Save. Your look goes into your fights.'
+    : 'Saved in this browser. Become a Chunin or higher to wear your loadout in the fights.';
 }
 $('slots').onclick = e => { const b = e.target.closest('button[data-k]'); if (!b) return; const k = b.dataset.k; let v = b.dataset.v;
   if (v === '') v = null; else if (v === 'true') v = true;
   look[k] = v; rebuild(); renderSlots();
   if (k === 'jutsu' && v) $('bJutsu').click(); else if (k === 'entrance' && v) $('bEnter').click(); };
-$('bSave').onclick = () => { if (!who) return; try { localStorage.setItem(key(), JSON.stringify(look)); saved = { ...look }; $('saveNote').textContent = 'Saved in this browser. Saving to your fights comes when accounts open.'; } catch (e) { $('saveNote').textContent = 'This browser blocked saving. Try a normal (not private) window.'; } };
+$('bSave').onclick = async () => { if (!who) return;
+  try { localStorage.setItem(key(), JSON.stringify(look)); saved = { ...look }; } catch (e) {}
+  if (!who.verified) { $('saveNote').textContent = 'Saved in this browser. Become a Chunin or higher to wear your loadout in the fights.'; return; }
+  const code = $('code').value.trim().toUpperCase(); if (!code) { $('saveNote').textContent = 'Type your ARASHI- code first.'; $('code').focus(); return; }
+  $('bSave').disabled = true; $('saveNote').textContent = 'Saving…';
+  const r = await A.saveLook(who.handle, code, look); $('bSave').disabled = false;
+  if (r && r.ok) { try { localStorage.setItem('arashi.code.' + who.handle, code); } catch (e) {} who.serverLook = r.look; $('saveNote').textContent = '✓ Saved. This is your look in the next fight.'; }
+  else $('saveNote').textContent = (r && r.error) || 'Could not save. Try again.'; };
 $('bReset').onclick = () => { look = defaults(); if (key()) try { localStorage.removeItem(key()); } catch (e) {} saved = null; rebuild(); renderSlots(); };
 
 function profile() {

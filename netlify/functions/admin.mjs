@@ -3,7 +3,7 @@
 //   POST /api/admin {action:'verify', handle}          → confirm after the buyer DMed the code from that account
 //   POST /api/admin {action:'unverify', handle}
 //   POST /api/admin {action:'assign', payment, handle} → attach an unmatched payment to a handle
-import { db, cleanHandle, validHandle, json, preflight, isAdmin, MEMBERSHIP_DAYS, assignSeat } from './_lib.mjs';
+import { db, cleanHandle, validHandle, json, preflight, isAdmin, MEMBERSHIP_DAYS, assignSeat, newCode } from './_lib.mjs';
 
 export default async (req) => {
   const pre = preflight(req); if (pre) return pre;
@@ -20,7 +20,7 @@ export default async (req) => {
   const key = 'ninja/' + h;
   if (b.action === 'verify' || b.action === 'unverify') {
     const r = await store.get(key, { type: 'json' }); if (!r) return json({ error: 'no purchase for that handle' }, 404);
-    r.verified = b.action === 'verify'; r.verifiedAt = Date.now(); if (r.verified) await assignSeat(store, r); else delete r.seat; await store.setJSON(key, r); return json({ ok: true, ninja: r });
+    r.verified = b.action === 'verify'; r.verifiedAt = Date.now(); if (r.verified) { await assignSeat(store, r); if (!r.code) r.code = newCode(); /* buyers who paid with just an @handle get a code to DM back; it unlocks saving their loadout */ } else delete r.seat; await store.setJSON(key, r); return json({ ok: true, ninja: r });
   }
   if (b.action === 'assign') {
     const p = await store.get('unmatched/' + b.payment, { type: 'json' }); if (!p) return json({ error: 'no such payment' }, 404);

@@ -2,8 +2,10 @@
 window.ARASHI = {
   // Set this to your Ko-fi username (ko-fi.com/<username>) and every Join / Buy button goes live.
   KOFI_USER: 'arashiacademy',
+  INSTAGRAM: '',   // e.g. 'arashi.academy' — fill in when the account name is final; links and texts use it
   // Backend (Netlify Functions): same site when served from Netlify, otherwise the Netlify address.
   API: /netlify\.app$/.test(location.hostname) ? '' : 'https://arashi-academy.netlify.app',
+  async saveLook(handle, code, look) { try { const r = await fetch(this.API + '/api/loadout', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ handle, code, look }) }); return await r.json(); } catch (e) { return { error: 'Could not reach the server. Try again.' }; } },
   async status(handle) { try { const r = await fetch(this.API + '/api/status?h=' + encodeURIComponent(handle), { cache: 'no-store' }); return r.ok ? await r.json() : null; } catch (e) { return null; } },
   kofi(path) { return this.KOFI_USER ? 'https://ko-fi.com/' + this.KOFI_USER + (path || '') : null; },
   CLANS: [
@@ -31,7 +33,7 @@ window.ARASHI = {
     let p = all.find(x => x.handle === handle);
     if (!p && st && st.verified) { let h = 0; for (const c of handle) h = (h * 31 + c.charCodeAt(0)) >>> 0; p = { handle, clan: h % 5, rank: 0, row: 0, seat: 0, w: 0, l: 0 }; }
     if (!p) return null;
-    p = { ...p, owned: (st && st.items) || [] };
+    p = { ...p, owned: (st && st.items) || [], verified: !!(st && st.verified), serverLook: (st && st.look) || null };
     if (st && st.verified && st.seat) { p.rank = st.seat.rank; p.row = st.seat.row; p.seat = st.seat.seat; if (st.clan != null) p.clan = st.clan; }
     else if (st && st.verified && st.rank > p.rank) p.rank = st.rank;
     return p;
@@ -54,8 +56,10 @@ window.ARASHI = {
       <p class="u-eye">Unlock</p><h2>${what.replace(/</g, '&lt;')}</h2>
       <ol class="u-steps">
         <li><b>Your Instagram</b><div class="u-row"><span>@</span><input id="uH" value="${H}" placeholder="your_handle" autocapitalize="off" spellcheck="false"><button type="button" id="uGo">Get my code</button></div><p class="u-err" id="uErr" role="alert"></p></li>
-        <li class="u-off" id="uS2"><b>${item ? 'Send a $2 support on Ko-fi' : 'Pick your tier on Ko-fi'}</b> and paste this in the message: <code id="uCode">—</code> <button type="button" class="u-copy" id="uCopy">Copy</button><a class="u-pay" id="uPay" href="${url}" target="_blank" rel="noopener">Open Ko-fi →</a></li>
-        <li class="u-off" id="uS3"><b>DM the same code</b> to our Instagram from @<span id="uH2">you</span>. That proves the account is yours, so nobody else can take your rank. Your ninja updates once we confirm.</li>
+        <li class="u-off" id="uS2"><b>${item ? 'Send a $2 support on Ko-fi' : 'Pick your tier on Ko-fi'}</b> and paste this in the message: <code id="uCode">—</code> <button type="button" class="u-copy" id="uCopy">Copy</button>
+          <label class="u-ok"><input type="checkbox" id="uAgree"> I agree to the <a href="terms.html" target="_blank">Terms</a> and want my perks to start as soon as they're confirmed.</label>
+          <a class="u-pay is-off" id="uPay" href="${url}" target="_blank" rel="noopener" aria-disabled="true">Open Ko-fi →</a></li>
+        <li class="u-off" id="uS3"><b>DM the same code</b> to ${this.INSTAGRAM ? `<a href="https://instagram.com/${this.INSTAGRAM}" target="_blank" rel="noopener">@${this.INSTAGRAM}</a>` : 'our Instagram'} from @<span id="uH2">you</span>. That proves the account is yours, so nobody else can take your rank. Your seat and gear update once we confirm. <b>Keep the code</b>: you use it on My Ninja to save your look for the fights.</li>
       </ol>`;
     const $ = id => d.querySelector('#' + id);
     $('uGo').onclick = async () => {
@@ -69,10 +73,19 @@ window.ARASHI = {
       $('uCode').textContent = code; $('uH2').textContent = h; $('uS2').classList.remove('u-off'); $('uS3').classList.remove('u-off');
       $('uGo').disabled = false; $('uGo').textContent = 'New code';
     };
+    $('uAgree').onchange = () => { const on = $('uAgree').checked; $('uPay').classList.toggle('is-off', !on); $('uPay').setAttribute('aria-disabled', String(!on)); };
+    $('uPay').addEventListener('click', e => { if (!$('uAgree').checked) { e.preventDefault(); $('uAgree').focus(); } });
     $('uCopy').onclick = () => { navigator.clipboard?.writeText($('uCode').textContent); $('uCopy').textContent = 'Copied'; };
     d.showModal(); if (!H) $('uH').focus();
   },
 };
+(function foot() {
+  const add = () => { if (document.querySelector('.sitefoot') || /(^|\/)(index\.html)?$/.test(location.pathname)) return;
+    const f = document.createElement('footer'); f.className = 'sitefoot';
+    f.innerHTML = '<img src="assets/brand/arashi-mark-64.png" alt="" width="22" height="22"> Arashi Academy · <a href="terms.html">Terms &amp; Privacy</a> · <a href="https://ko-fi.com/' + (window.ARASHI.KOFI_USER || '') + '" target="_blank" rel="noopener">Ko-fi</a> · Not affiliated with Naruto or its creators.';
+    document.body.appendChild(f); };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', add); else add();
+})();
 (function nav() {
   const here = (location.pathname.split('/').pop() || 'index.html').replace('.html', '') || 'index';
   const links = [['index', 'Arena'], ['ranks', 'Ranks'], ['shop', 'Shop'], ['ninja', 'My Ninja']];
