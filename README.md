@@ -23,3 +23,14 @@ Set `KOFI_USER` in `assets/site.js` to the Ko-fi username. Until then the Join a
 - Shop thumbnails live in `assets/items/<slug>.webp`. Re-render them after changing a look:
   `node tools/thumbs.js <path-to-three@0.147.0-package>` (needs Playwright).
 - My Ninja saves each loadout in the visitor's browser (`localStorage`, key `arashi.loadout.<handle>`). Syncing loadouts into the daily fights needs accounts/a database later.
+
+## Seating followers (like a daily roll call)
+Instagram has no API for new followers, so the roster is updated from Instagram's own data export:
+1. Instagram → Accounts Center → Your information and permissions → Download your information →
+   pick the Arashi account → Some of your information → **Followers and following** → Download to device →
+   Format **JSON**, date range **All time**. Instagram emails a link when the file is ready.
+2. In the ZIP, take `connections/followers_and_following/followers_1.json`.
+3. `node scripts/followers.mjs add followers_1.json` (add `--dry-run` first to preview), then push.
+New followers get the next free Genin seat in the most empty clan stand; nobody who already has a seat moves.
+The first real import replaces the demo roster. Paid ranks: `node scripts/followers.mjs rank <handle> <1-3>`.
+`node scripts/followers.mjs stats` shows how full each zone is.
