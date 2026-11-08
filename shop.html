@@ -47,8 +47,10 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(34px,5.5vw,58px);m
 .tabs .clans button[aria-pressed="true"]{color:var(--paper);border-color:var(--gold)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
 .item{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
-.item .art{aspect-ratio:4/3;display:grid;place-items:center;position:relative;max-width:100%}
-.item .art svg{width:46%;height:auto}
+.item .art{aspect-ratio:1/1;display:grid;place-items:center;position:relative;max-width:100%}
+.item .art img{width:100%;height:100%;object-fit:contain;display:block}
+.item .try{font-size:13px;font-weight:700;color:var(--paper);text-decoration:none;border:1px solid var(--line);border-radius:7px;padding:6px 9px}
+.item .try:hover{border-color:var(--gold);color:var(--gold)}
 .item .lock{position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.55);display:grid;place-items:center}
 .item .body{padding:14px 14px 16px;display:flex;flex-direction:column;gap:8px;flex:1}
 .item h3{margin:0;font-family:var(--display);font-weight:800;font-size:20px;line-height:1.15}
@@ -64,7 +66,7 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(34px,5.5vw,58px);m
 .item.locked h3{color:#bdb2a2}
 .note{margin-top:34px;color:var(--muted);font-size:13.5px;line-height:1.6;max-width:70ch}
 .note a{color:var(--gold)}
-@media (max-width:620px){ .find{margin-left:0;max-width:none} .tabs .clans{margin-left:0} }
+@media (max-width:620px){ .find{margin-left:0;max-width:none} .tabs .clans{margin-left:0} .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px} .item h3{font-size:17px} .item .body{padding:10px 10px 12px} }
 </style>
 </head>
 <body>
@@ -103,14 +105,8 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(34px,5.5vw,58px);m
 const go=()=>{ if(!window.ARASHI||!window.ITEMS) return setTimeout(go,50); start(); }; go();
 function start(){
   const A=ARASHI, I=ITEMS, $=id=>document.getElementById(id);
-  let rank=0, cat='outfits', clan=2;
+  let rank=0, cat='outfits', clan=2, who='';
   const cap=s=>s[0]+s.slice(1).toLowerCase();
-  const ICON={
-    outfits:c=>`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M34 14 L50 24 L66 14 L86 30 L76 44 L70 40 L70 88 L30 88 L30 40 L24 44 L14 30 Z" fill="${c}" stroke="#120f0d" stroke-width="4" stroke-linejoin="round"/><path d="M40 18 L50 50 L60 18" fill="none" stroke="#120f0d" stroke-width="4"/><rect x="30" y="56" width="40" height="8" fill="#120f0d" opacity=".55"/></svg>`,
-    jutsu:c=>`<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="34" fill="none" stroke="${c}" stroke-width="6"/><path d="M56 16 L32 54 L50 54 L42 86 L70 44 L52 44 Z" fill="${c}" stroke="#120f0d" stroke-width="3" stroke-linejoin="round"/></svg>`,
-    weapons:c=>`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 8 L60 46 L50 58 L40 46 Z" fill="${c}" stroke="#120f0d" stroke-width="4" stroke-linejoin="round"/><rect x="45" y="58" width="10" height="26" fill="#3a2a1e" stroke="#120f0d" stroke-width="4"/><circle cx="50" cy="90" r="6" fill="none" stroke="${c}" stroke-width="4"/></svg>`,
-    extras:c=>`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M20 30 Q50 6 80 30 Q86 64 50 90 Q14 64 20 30 Z" fill="${c}" stroke="#120f0d" stroke-width="4"/><path d="M32 46 Q40 40 46 48 M54 48 Q60 40 68 46" fill="none" stroke="#120f0d" stroke-width="5" stroke-linecap="round"/><path d="M50 22 L50 34" stroke="#d4452f" stroke-width="4"/></svg>`,
-  };
   const BG=['#2a2a2e','#173528','#3a1814','#3a2c10'];
   $('rankSeg').innerHTML=A.RANKS.map((r,i)=>`<button data-r="${i}" aria-pressed="${i===rank}" style="${i===rank?`background:${r.col}`:''}">${r.n}</button>`).join('');
   $('clanSeg').innerHTML=A.CLANS.map((c,i)=>`<button data-c="${i}" aria-pressed="${i===clan}"><i style="background:${c.c}"></i>${c.name}</button>`).join('');
@@ -118,12 +114,11 @@ function start(){
   function list(){ if(cat!=='jutsu') return I[cat]; const name=A.CLANS[clan].name; return [...I.jutsu[name], ...I.jutsu.Sennin]; }
   function render(){
     $('clanSeg').hidden=cat!=='jutsu';
-    const accent=cat==='jutsu'?A.CLANS[clan].c2:'#e7b54a';
-    $('grid').innerHTML=list().map(([name,need,desc])=>{ const lock=need>rank, R=A.RANKS[need], buyable=lock&&(cat==='outfits'||cat==='jutsu');
+        $('grid').innerHTML=list().map(([name,need,desc])=>{ const lock=need>rank, R=A.RANKS[need], buyable=lock&&(cat==='outfits'||cat==='jutsu');
       return `<article class="item${lock?' locked':''}">
-        <div class="art" style="background:radial-gradient(circle at 50% 40%,${BG[need]} 0%,#15110e 75%)">${ICON[cat](lock?'#8d8478':accent)}${lock?'<span class="lock" aria-label="Locked"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f3eadb" stroke-width="2.5"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>':''}</div>
+        <div class="art" style="background:radial-gradient(circle at 50% 40%,${BG[need]} 0%,#15110e 75%)"><img src="assets/items/${I.slug(name)}.webp" alt="${name}" loading="lazy" width="384" height="384">${lock?'<span class="lock" aria-label="Locked"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f3eadb" stroke-width="2.5"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>':''}</div>
         <div class="body"><span class="pill" style="background:${R.col}">${R.n}</span><h3>${name}</h3><p>${desc}</p>
-          <div class="foot">${lock?`<a class="need" href="ranks.html">Unlock at ${cap(R.n)} →</a>${buyable?`<a class="buy" data-kofi="/shop" data-soon="keep">Buy once · $2</a>`:''}`:'<span class="ok">✓ Yours</span>'}</div></div>
+          <div class="foot">${lock?`<a class="need" href="ranks.html">Unlock at ${cap(R.n)} →</a>${buyable?`<a class="buy" data-kofi="/shop" data-soon="keep">Buy once · $2</a>`:''}`:'<span class="ok">✓ Yours</span>'}<a class="try" href="ninja.html?${who?`h=${encodeURIComponent(who)}&`:''}try=${I.slug(name)}">${lock?'Preview':'Wear it'} →</a></div></div>
       </article>`; }).join('');
     A.wireKofi($('grid'));
   }
@@ -133,7 +128,7 @@ function start(){
   $('find').onsubmit=async e=>{ e.preventDefault(); const k=$('q').value.trim().toLowerCase().replace(/^@+/,''); if(!k) return;
     try{ const all=await A.roster(); const p=all.find(x=>x.handle===k);
       if(!p){ $('status').textContent=`@${k} isn't seated yet. Follow the account and your seat appears within a day.`; return; }
-      clan=p.clan; $('clanSeg').querySelectorAll('button').forEach((x,i)=>x.setAttribute('aria-pressed',i===clan));
+      who=p.handle; clan=p.clan; $('clanSeg').querySelectorAll('button').forEach((x,i)=>x.setAttribute('aria-pressed',i===clan));
       $('status').innerHTML=`@${p.handle} is <b>${A.RANKS[p.rank].n}</b> in the <b>${A.CLANS[p.clan].name}</b> clan. <a href="ninja.html?h=${encodeURIComponent(p.handle)}" style="color:var(--gold)">See your ninja →</a>`;
       setRank(p.rank);
     }catch(err){ $('status').textContent='Could not load the follower list. Try again in a moment.'; } };

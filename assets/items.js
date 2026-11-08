@@ -5,6 +5,7 @@ window.ITEMS = {
     ['Shadow Runner', 1, 'Tight black suit, short scarf and leather guards.'],
     ['Storm Monk', 1, 'Gray robe with wide sleeves and prayer beads.'],
     ['Clan Vest', 1, 'Vest in your clan color with your element on the chest.'],
+    ['Jonin Coat', 2, 'Charcoal coat lined in your clan color, with a half mask.'],
     ['Crimson Ronin', 2, 'Red haori, straw hat and torn hems.'],
     ['Mist Hunter', 2, 'Long blue hooded coat and a half mask.'],
     ['Iron Fang', 2, 'Light plate armor and a short cape.'],
@@ -44,4 +45,23 @@ window.ITEMS.unlocked = function (rank, clan) {
   const I = window.ITEMS, J = I.jutsu[['Ember', 'Tide', 'Volt', 'Gale', 'Stone'][clan]] || [];
   const all = [...I.outfits.map(x => ['Outfit', ...x]), ...J.map(x => ['Jutsu', ...x]), ...(rank >= 3 ? I.jutsu.Sennin.map(x => ['Jutsu', ...x]) : []), ...I.weapons.map(x => ['Weapon', ...x]), ...I.extras.map(x => ['Extra', ...x])];
   return { have: all.filter(x => x[2] <= rank), next: all.filter(x => x[2] === rank + 1), total: all.length };
+};
+
+window.ITEMS.slug = n => n.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+/* how each item shows on your ninja: the loadout slot it fills and the look option it sets */
+window.ITEMS.slotOf = function (cat, name) {
+  if (cat === 'outfits') return ['outfit', name];
+  if (cat === 'weapons') return ['weapon', name];
+  if (cat === 'jutsu') return ['jutsu', name];
+  if (name === 'Clan scarf') return ['scarf', true];
+  if (/mask$/.test(name)) return ['mask', name];
+  if (name === 'Element aura') return ['aura', true];
+  if (name === 'Glowing eyes') return ['eyes', 'glow'];
+  if (/entrance|Leap/.test(name)) return ['entrance', name];
+  return ['extra', name];
+};
+window.ITEMS.find = function (slug) {
+  const I = window.ITEMS; for (const cat of ['outfits', 'weapons', 'extras']) for (const x of I[cat]) if (I.slug(x[0]) === slug) return { cat, name: x[0], rank: x[1], desc: x[2] };
+  for (const el in I.jutsu) for (const x of I.jutsu[el]) if (I.slug(x[0]) === slug) return { cat: 'jutsu', el, name: x[0], rank: x[1], desc: x[2] };
+  return null;
 };

@@ -16,3 +16,10 @@ The ninja arena where every Instagram follower gets a seat. Original fan-made wo
 
 ## Ko-fi
 Set `KOFI_USER` in `assets/site.js` to the Ko-fi username. Until then the Join and Buy buttons show "Opens soon".
+
+## Characters, moves and shop art
+- `assets/ninja.js` builds every ninja (rank look, outfit, weapon, mask, scarf, aura, hair, face expressions).
+- `assets/fight.js` holds the keyframed moves (jabs, kicks, block, hits, backflip, seal, cast…) and the hit effects.
+- Shop thumbnails live in `assets/items/<slug>.webp`. Re-render them after changing a look:
+  `node tools/thumbs.js <path-to-three@0.147.0-package>` (needs Playwright).
+- My Ninja saves each loadout in the visitor's browser (`localStorage`, key `arashi.loadout.<handle>`). Syncing loadouts into the daily fights needs accounts/a database later.

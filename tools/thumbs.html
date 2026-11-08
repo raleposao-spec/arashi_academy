@@ -1,0 +1,64 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:transparent}</style></head><body>
+<!-- Renders the shop thumbnails into assets/items/<slug>.png (driven by tools/thumbs.js) -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="../assets/items.js"></script>
+<script src="../assets/ninja.js"></script>
+<script src="../assets/fight.js"></script>
+<script>
+THREE.ColorManagement.legacyMode = false;
+const S = 512, r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+r.setSize(S, S); r.setPixelRatio(1); r.outputEncoding = THREE.sRGBEncoding; r.setClearColor(0, 0); document.body.appendChild(r.domElement);
+const CL = ['Ember', 'Tide', 'Volt', 'Gale', 'Stone'];
+const ECOL = { Ember: ['#ff7a2a', '#ffd36a'], Tide: ['#3fa8ff', '#bfe9ff'], Volt: ['#ffe14a', '#b48cff'], Gale: ['#6dffb0', '#e6fff0'], Stone: ['#c99a5a', '#7d6a50'], Shadow: ['#7a3cff', '#1a0a33'], Light: ['#fff2a8', '#ffd04a'] };
+function glowSprite(col, size, op) { const m = new THREE.SpriteMaterial({ map: NINJA.glow(), color: new THREE.Color(col), transparent: true, opacity: op, blending: THREE.AdditiveBlending, depthWrite: false }); const s = new THREE.Sprite(m); s.scale.setScalar(size); return s; }
+let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+function put(o, p) { o.position.copy(p); SC.add(o); return o; } let SC;
+function pose(move, t) { return FIGHT.samplePose(FIGHT.MOVES[move], t); }
+
+window.shot = function (slug) {
+  seed = 7; const it = ITEMS.find(slug); if (!it) return null;
+  const sc = SC = new THREE.Scene();
+  sc.add(new THREE.HemisphereLight(0x9a90c8, 0x2a1a14, .75)); const d = new THREE.DirectionalLight(0xffd8b0, 1.7); d.position.set(2, 4, 5); sc.add(d);
+  const rim = new THREE.DirectionalLight(0x8fb4ff, 1.1); rim.position.set(-3, 2, -3); sc.add(rim);
+  let o = { rank: it.rank, clan: 1, seed: 3 }, frame = 'body', ry = -.45, mv = 'relaxed', mt = .5, fx = null;
+  const [slot, val] = ITEMS.slotOf(it.cat, it.name);
+  if (slot === 'outfit') { o.outfit = it.name; o.weapon = 'none'; }
+  else if (slot === 'weapon') { o.rank = 1; o.outfit = 'Shadow Runner'; o.weapon = it.name; ry = 2.55; frame = 'back'; }
+  else if (slot === 'mask') { o.rank = 1; o.outfit = 'Shadow Runner'; o.mask = val; o.maskOn = true; frame = 'head'; ry = .12; }
+  else if (slot === 'scarf') { o.rank = 1; o.outfit = 'Academy Gi'; o.scarf = true; frame = 'half'; ry = -.6; }
+  else if (slot === 'aura') { o.rank = 2; o.outfit = 'Clan Vest'; o.aura = true; frame = 'body'; }
+  else if (slot === 'eyes') { o.rank = 3; o.outfit = 'Shadow Runner'; o.eyes = 'glow'; frame = 'head'; ry = -.25; }
+  else if (slot === 'jutsu') { const el = it.el === 'Sennin' ? (it.name === 'Shadow Bind' ? 'Shadow' : 'Light') : it.el; o.clan = Math.max(0, CL.indexOf(it.el)); o.rank = Math.max(1, it.rank); o.outfit = NINJA.RANK_OUTFIT[o.rank]; const k = ITEMS.jutsu[it.el].findIndex(x => x[0] === it.name); mv = k % 2 ? 'cast' : 'seal'; mt = k % 2 ? .6 : .5; ry = k % 2 ? -.9 : .75; fx = el; }
+  else if (slot === 'entrance') { o.rank = 2; o.outfit = 'Jonin Coat'; fx = it.name; if (/Leap/.test(it.name)) { mv = 'backflip'; mt = .35; } }
+  if (o.weapon === 'none') delete o.weapon;
+  const N = NINJA.build(o); sc.add(N.group); N.group.rotation.y = ry;
+  let t = 0; for (let i = 0; i < 30; i++) { N.update(.05, t += .05); N.setPose(pose(mv, mt), 1); }
+  if (slot === 'jutsu' || slot === 'eyes') N.face.set(slot === 'eyes' ? 'focus' : 'shout'); else N.face.set('smirk');
+  N.group.updateMatrixWorld(true);
+  const wp = b => N.bones[b].getWorldPosition(new THREE.Vector3());
+  // effects
+  if (slot === 'jutsu') { const [c1, c2] = ECOL[fx], h = mv === 'seal' ? wp('handL').lerp(wp('handR'), .5) : wp('handR'); if (mv === 'cast') { h.x -= .2; h.y += .05; } else { h.z += .3; h.y -= .1; h.x += .1; }
+    put(glowSprite(c1, mv === 'seal' ? .9 : 1.4, .7), h.clone()); put(glowSprite(c2, .45, 1), h.clone());
+    for (let i = 0; i < 26; i++) { const p = h.clone().add(new THREE.Vector3((rnd() - .5) * .9, (rnd() - .5) * .8, (rnd() - .5) * .6)); put(glowSprite(rnd() < .5 ? c1 : c2, .08 + rnd() * .18, .9), p); }
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(.55, .012, 6, 60), new THREE.MeshBasicMaterial({ color: new THREE.Color(c1), transparent: true, opacity: .7, blending: THREE.AdditiveBlending })); ring.position.set(0, .02, 0); ring.rotation.x = Math.PI / 2; sc.add(ring); }
+  if (slot === 'entrance') { const smoke = /Smoke/.test(fx), tele = /Teleport/.test(fx);
+    for (let i = 0; i < (smoke ? 40 : 24); i++) { const a = rnd() * 7, rr = .2 + rnd() * .5, y = smoke ? rnd() * .9 : rnd() * 1.9;
+      const c = smoke ? (rnd() < .5 ? '#b9b2c6' : '#7a7388') : tele ? (rnd() < .5 ? '#9fd0ff' : '#ffffff') : '#ffd36a';
+      const s = smoke ? new THREE.Sprite(new THREE.SpriteMaterial({ map: NINJA.glow(), color: new THREE.Color(c), transparent: true, opacity: .55, depthWrite: false })) : glowSprite(c, 1, .8);
+      s.scale.setScalar(smoke ? .35 + rnd() * .45 : .06 + rnd() * .12); s.position.set(Math.cos(a) * rr, y, Math.sin(a) * rr); sc.add(s); }
+    if (tele) for (let i = 0; i < 5; i++) { const ln = new THREE.Mesh(new THREE.BoxGeometry(.01, 2.2, .01), new THREE.MeshBasicMaterial({ color: 0xcfe8ff, transparent: true, opacity: .6, blending: THREE.AdditiveBlending })); ln.position.set((rnd() - .5) * .9, 1, (rnd() - .5) * .5); sc.add(ln); }
+    if (/Leap/.test(fx)) { N.group.position.y = .25; for (let i = 0; i < 6; i++) { const ln = new THREE.Mesh(new THREE.BoxGeometry(.008, .5, .008), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: .35 })); ln.position.set((rnd() - .5) * .8, .3 + rnd() * .4, -.2); sc.add(ln); } } }
+  // camera
+  sc.updateMatrixWorld(true);
+  const cam = new THREE.PerspectiveCamera(26, 1, .02, 50); let tg, dist;
+  if (frame === 'head') { tg = wp('head').add(new THREE.Vector3(0, .07, 0)); dist = .95; }
+  else if (frame === 'half') { tg = wp('neck').add(new THREE.Vector3(0, -.12, 0)); dist = 1.9; }
+  else { tg = new THREE.Vector3(0, N.group.position.y + .95, 0); dist = 3.5; }
+  cam.position.copy(tg).add(new THREE.Vector3(.12 * dist, .1 * dist, dist)); cam.lookAt(tg);
+  r.render(sc, cam); const url = r.domElement.toDataURL('image/webp', .85);
+  sc.traverse(m => { if (m.geometry) m.geometry.dispose(); });
+  return url;
+};
+window.__slugs = (() => { const I = ITEMS, out = []; ['outfits', 'weapons', 'extras'].forEach(c => I[c].forEach(x => out.push(I.slug(x[0])))); for (const el in I.jutsu) I.jutsu[el].forEach(x => out.push(I.slug(x[0]))); return out; })();
+window.__done = true;
+</script></body></html>

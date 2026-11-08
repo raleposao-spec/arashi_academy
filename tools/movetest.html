@@ -1,0 +1,16 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:#1a1424}</style></head><body>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="../assets/ninja.js"></script><script src="../assets/fight.js"></script>
+<script>
+THREE.ColorManagement.legacyMode=false;
+const W=innerWidth,H=innerHeight, r=new THREE.WebGLRenderer({antialias:true}); r.setSize(W,H); r.outputEncoding=THREE.sRGBEncoding; document.body.appendChild(r.domElement);
+const s=new THREE.Scene(); s.background=new THREE.Color('#2a2034');
+s.add(new THREE.HemisphereLight(0x9a90c8,0x2a1a14,.8)); const d=new THREE.DirectionalLight(0xffd0a0,1.5); d.position.set(2,4,5); s.add(d);
+const g=new THREE.GridHelper(20,20,0x554466,0x332244); s.add(g);
+const q=new URLSearchParams(location.search); const moves=(q.get('m')||'crossR').split(','); const times=(q.get('t')||'0,.1,.2,.3').split(',').map(Number);
+const cam=new THREE.PerspectiveCamera(28,W/H,.05,80); const nC=times.length, nR=moves.length;
+cam.position.set(0,nR*1.2,nR*3.2+6); cam.lookAt(0,nR*1.1-1,0);
+moves.forEach((mv,ri)=>times.forEach((t,ci)=>{ const f=FIGHT.Fighter(s,{look:{rank:2,clan:ci%5},side:-1}); f.play(mv,0); f.face='shout';
+  FIGHT.applyFighter(f,t,.05,0); f.holder.position.x+= (ci-(nC-1)/2)*1.7 - 0; f.holder.position.y+= (nR-1-ri)*2.3; f.blob.visible=false; f.holder.rotation.y=Math.PI/2+.5; }));
+r.render(s,cam); window.__done=true;
+</script></body></html>
