@@ -7,11 +7,11 @@ export default async (req) => {
   let d;
   try { const form = await req.formData(); d = JSON.parse(form.get('data')); } catch { return new Response('Bad payload', { status: 400 }); }
   const token = Netlify.env.get('KOFI_TOKEN');
-  if (!token || d.verification_token !== token) { console.log('kofi: rejected (verification token missing or wrong)'); return new Response('Unauthorized', { status: 401 }); }
+  if (!token || d.verification_token !== token) { console.log('kofi: rejected (verification token missing or wrong)'); await db().setJSON('meta/last-webhook', { at: new Date().toISOString(), result: token ? 'rejected: wrong token' : 'rejected: KOFI_TOKEN not set', type: d.type || null }); return new Response('Unauthorized', { status: 401 }); }
 
   const store = db();
   const id = d.kofi_transaction_id || d.message_id;
-  if (await store.get('pay/' + id)) return new Response('ok');            // Ko-fi may retry; handle each payment once
+  if (await store.get('pay/' + id)) { await store.setJSON('meta/last-webhook', { at: new Date().toISOString(), result: 'duplicate (already saved)', type: d.type }); return new Response('ok'); } // Ko-fi may retry; handle each payment once
 
   // Who is it for? Prefer a site code (ARASHI-XXXXX), else an @handle in the message.
   const msg = String(d.message || '');
@@ -40,6 +40,7 @@ export default async (req) => {
   } else {
     await store.setJSON('unmatched/' + id, pay);                           // no handle: shows up in the admin page to sort out by hand
   }
+  await store.setJSON('meta/last-webhook', { at: new Date().toISOString(), result: 'saved', type: d.type, tier: d.tier_name || null, matched: !!handle });
   console.log(`kofi: saved ${d.type} ${d.tier_name || ''} ${d.amount} ${d.currency} → ${handle ? '@' + handle : 'no handle (admin: unmatched)'}`);
   return new Response('ok');
 };
