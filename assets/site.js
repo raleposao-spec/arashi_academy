@@ -35,8 +35,8 @@ window.ARASHI = {
   const here = (location.pathname.split('/').pop() || 'index.html').replace('.html', '') || 'index';
   const links = [['index', 'Arena'], ['ranks', 'Ranks'], ['shop', 'Shop'], ['ninja', 'My Ninja']];
   const n = document.createElement('nav'); n.className = 'sitenav'; n.setAttribute('aria-label', 'Site');
-  if (!document.querySelector('link[rel=icon]')) { const l = document.createElement('link'); l.rel = 'icon'; l.type = 'image/svg+xml'; l.href = 'assets/brand/arashi-mark.svg'; document.head.appendChild(l); }
-  n.innerHTML = '<a class="sn-brand" href="index.html" aria-label="Arashi Academy home"><img src="assets/brand/arashi-mark.svg" alt="" width="32" height="32"><span>Arashi Academy</span></a>' +
+  if (!document.querySelector('link[rel=icon]')) { const l = document.createElement('link'); l.rel = 'icon'; l.type = 'image/png'; l.href = 'assets/brand/arashi-mark-64.png'; document.head.appendChild(l); const ap = document.createElement('link'); ap.rel = 'apple-touch-icon'; ap.href = 'assets/brand/arashi-badge-180.png'; document.head.appendChild(ap); }
+  n.innerHTML = '<a class="sn-brand" href="index.html" aria-label="Arashi Academy home"><img src="assets/brand/arashi-mark-64.png" alt="" width="32" height="32"><span>Arashi Academy</span></a>' +
     '<div class="sn-links">' + links.map(([h, t]) => `<a href="${h}.html"${h === here ? ' aria-current="page"' : ''}>${t}</a>`).join('') + '</div>';
   document.body.prepend(n);
 })();

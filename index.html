@@ -7,7 +7,10 @@
 <title>Arashi Arena</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="assets/site.css?v=5">
+<meta property="og:image" content="https://raleposao-spec.github.io/arashi_academy/assets/brand/arashi-badge-1024.png">
+<link rel="icon" type="image/png" href="assets/brand/arashi-mark-64.png">
+<link rel="apple-touch-icon" href="assets/brand/arashi-badge-180.png">
+<link rel="stylesheet" href="assets/site.css?v=6">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: full-bleed 3D arena; HUD floats at the edges — brand + count on top, search and seat card docked at the bottom. */
@@ -122,7 +125,7 @@ form.search{width:min(560px,100%);display:flex;align-items:center;gap:6px;paddin
 </style>
 </head>
 <body>
-<script src="assets/site.js?v=5"></script>
+<script src="assets/site.js?v=6"></script>
 
 
 <div id="scene" aria-label="3D arena — drag to rotate, scroll or pinch to zoom"></div>
@@ -130,14 +133,7 @@ form.search{width:min(560px,100%);display:flex;align-items:center;gap:6px;paddin
 
 <header class="top">
   <div class="brand panel">
-    <svg viewBox="0 0 64 64" aria-hidden="true">
-      <circle cx="32" cy="32" r="29" fill="#2a221b" stroke="#e7b54a" stroke-width="3"/>
-      <path d="M12 46 L32 18 L52 46 Z" fill="#f3eadb"/>
-      <path d="M26 26.5 L32 18 L38 26.5 L35 25 L32 28 L29 25 Z" fill="#2a221b"/>
-      <path d="M18 14 l4 5 -3 1 4 6" fill="none" stroke="#e7b54a" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
-      <path d="M32 6 l-2.6 5 3.2 .6 -2.6 5" fill="none" stroke="#e7b54a" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
-      <path d="M46 14 l-4 5 3 1 -4 6" fill="none" stroke="#e7b54a" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
-    </svg>
+    <img src="assets/brand/arashi-badge-180.png" alt="" width="52" height="52" style="width:52px;height:52px;display:block;flex:none">
     <div>
       <div class="eyebrow">Arashi Academy</div>
       <h1>The Arena</h1>
@@ -197,8 +193,8 @@ form.search{width:min(560px,100%);display:flex;align-items:center;gap:6px;paddin
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
-<script src="assets/ninja.js?v=5"></script>
-<script src="assets/fight.js?v=5"></script>
+<script src="assets/ninja.js?v=6"></script>
+<script src="assets/fight.js?v=6"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/utils/BufferGeometryUtils.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/shaders/CopyShader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
@@ -546,7 +542,29 @@ const crestImg=new Image(); crestImg.onload=()=>{ const c=bigBannerTex.image, g=
   const t=new THREE.CanvasTexture((()=>{ const k=document.createElement('canvas'); k.width=k.height=512; k.getContext('2d').drawImage(crestImg,0,0,512,512); return k; })()); t.encoding=bigBannerTex.encoding;
   const disc=new THREE.Mesh(new THREE.CircleGeometry(1.15,48), new THREE.MeshBasicMaterial({map:t,transparent:true,side:THREE.DoubleSide,toneMapped:false})); disc.position.set(0,8.65,0); torii.add(disc);
   add(torii,new THREE.BoxGeometry(.25,1,.25),toon(0x16110d),[0,7.9,-.05],null,null,0); };
-crestImg.src='assets/brand/arashi-badge.svg';
+crestImg.src='assets/brand/arashi-badge-512.png';
+
+/* ---------- Arashi Academy flags waving on the rim of the stands ---------- */
+const flagTex=canvasTex(512,320,(g,w,h)=>{ g.fillStyle='#0b0a0a'; g.fillRect(0,0,w,h); });
+function paintFlag(){ const c=flagTex.image, g=c.getContext('2d'), w=c.width, h=c.height;
+  g.fillStyle='#0b0a0a'; g.fillRect(0,0,w,h); g.fillStyle='#b3121b'; g.fillRect(0,0,w,16); g.fillRect(0,h-16,w,16);
+  g.fillStyle='#ede6da'; g.fillRect(0,18,w,4); g.fillRect(0,h-22,w,4);
+  const d=h-70; g.drawImage(crestImg,(w-d)/2,35,d,d); flagTex.needsUpdate=true; }
+crestImg.addEventListener('load',paintFlag);
+const FLAGS=[], WIND=-.55;
+function makeFlag(pos,w,h,poleH){ const grp=new THREE.Group(); grp.position.copy(pos); scene.add(grp);
+  const pole=new THREE.Mesh(new THREE.CylinderGeometry(.09,.13,poleH,8), woodD); pole.position.y=poleH/2; grp.add(pole);
+  const knob=new THREE.Mesh(new THREE.SphereGeometry(.2,10,8), toon(0xd9a63f)); knob.position.y=poleH+.1; grp.add(knob);
+  const geo=new THREE.PlaneGeometry(w,h,28,12); geo.translate(w/2,0,0); const base=geo.attributes.position.array.slice();
+  const cloth=new THREE.Mesh(geo,toon(0xffffff,{map:flagTex,side:THREE.DoubleSide}));
+  cloth.position.set(.1,poleH-h/2-.15,0); cloth.rotation.y=WIND; grp.add(cloth); FLAGS.push({geo,base,w,ph:Math.random()*6}); }
+for(let i=0;i<14;i++){ const a=i/14*Math.PI*2+.22; if(Math.abs(Math.sin((a-LA)/2))<.2 || Math.abs(Math.sin(a/2))<.12) continue; makeFlag(polar(TOPR+.8,a,TOPH),5.2,3.3,8.5); }
+[-1,1].forEach(sd=>makeFlag(polar(37,sd*.2,0),3.6,2.3,9.5));
+function waveFlags(t){ FLAGS.forEach(F=>{ const p=F.geo.attributes.position, b=F.base;
+  for(let i=0;i<p.count;i++){ const x=b[i*3], y=b[i*3+1], k=x/F.w;
+    p.setZ(i, k*(.55*Math.sin(x*1.15-t*4.2+F.ph)+.18*Math.sin(x*2.6+y*.9-t*6.3+F.ph)));
+    p.setY(i, y - k*k*.25 + k*.06*Math.sin(x*1.7-t*3.1+F.ph)); }
+  p.needsUpdate=true; F.geo.computeVertexNormals(); }); }
 
 
 const gong=new THREE.Group(); gong.position.copy(polar(26.4,0,.5)); scene.add(gong);
@@ -859,6 +877,7 @@ function loop(now){ const dt=Math.min(.05,(now-last)/1000); last=now;
     const a=petalGeo.attributes.position; for(let i=0;i<PN;i++){ let y=a.getY(i)-dt*1.5*pv[i]; let x=a.getX(i)+Math.sin(t*.7+i)*dt*1.2+dt*.8; if(y<0) y=45; if(x>110) x=-110; a.setX(i,x); a.setY(i,y); } a.needsUpdate=true;
     auraMat.size=1.25+Math.sin(t*3)*.22;
     sectors.forEach((s,i)=>{ s.flag.rotation.y=Math.sin(t*1.3+i)*.18; });
+    waveFlags(t);
     flames.forEach(f=>{ const u=f.userData; const s=u.b*(.8+.35*Math.sin(t*9+u.p)+.15*Math.sin(t*23+u.p*2)); f.scale.set(s*.55,s,1); f.position.y=4.1+s*.35; });
     mist.forEach((m,i)=>{ m.position.y=m.userData.b+Math.sin(t*.5+i)*1.2; });
     for(let i=0;i<SLN;i++){ const L=slData[i]; L.y+=dt*L.v; if(L.y>150) L.y=14; const sw=Math.sin(t*.4+L.p)*2; dm.position.set((L.r)*Math.sin(L.a)+sw,L.y,(L.r)*Math.cos(L.a)); dm.rotation.set(0,t+L.p,0); dm.scale.setScalar(1); dm.updateMatrix(); skyL.setMatrixAt(i,dm.matrix); }
