@@ -7,7 +7,7 @@ export default async (req) => {
   let d;
   try { const form = await req.formData(); d = JSON.parse(form.get('data')); } catch { return new Response('Bad payload', { status: 400 }); }
   const token = Netlify.env.get('KOFI_TOKEN');
-  if (!token || d.verification_token !== token) return new Response('Unauthorized', { status: 401 });
+  if (!token || d.verification_token !== token) { console.log('kofi: rejected (verification token missing or wrong)'); return new Response('Unauthorized', { status: 401 }); }
 
   const store = db();
   const id = d.kofi_transaction_id || d.message_id;
@@ -40,6 +40,7 @@ export default async (req) => {
   } else {
     await store.setJSON('unmatched/' + id, pay);                           // no handle: shows up in the admin page to sort out by hand
   }
+  console.log(`kofi: saved ${d.type} ${d.tier_name || ''} ${d.amount} ${d.currency} → ${handle ? '@' + handle : 'no handle (admin: unmatched)'}`);
   return new Response('ok');
 };
 
