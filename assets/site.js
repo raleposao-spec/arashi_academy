@@ -35,7 +35,8 @@ window.ARASHI = {
   const here = (location.pathname.split('/').pop() || 'index.html').replace('.html', '') || 'index';
   const links = [['index', 'Arena'], ['ranks', 'Ranks'], ['shop', 'Shop'], ['ninja', 'My Ninja']];
   const n = document.createElement('nav'); n.className = 'sitenav'; n.setAttribute('aria-label', 'Site');
-  n.innerHTML = '<a class="sn-brand" href="index.html" aria-label="Arashi Academy home"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="#2a221b" stroke="#e7b54a" stroke-width="4"/><path d="M12 46 L32 18 L52 46 Z" fill="#f3eadb"/><path d="M18 14 l4 5 -3 1 4 6M32 6 l-2.6 5 3.2 .6 -2.6 5M46 14 l-4 5 3 1 -4 6" fill="none" stroke="#e7b54a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/></svg><span>Arashi Academy</span></a>' +
+  if (!document.querySelector('link[rel=icon]')) { const l = document.createElement('link'); l.rel = 'icon'; l.type = 'image/svg+xml'; l.href = 'assets/brand/arashi-mark.svg'; document.head.appendChild(l); }
+  n.innerHTML = '<a class="sn-brand" href="index.html" aria-label="Arashi Academy home"><img src="assets/brand/arashi-mark.svg" alt="" width="32" height="32"><span>Arashi Academy</span></a>' +
     '<div class="sn-links">' + links.map(([h, t]) => `<a href="${h}.html"${h === here ? ' aria-current="page"' : ''}>${t}</a>`).join('') + '</div>';
   document.body.prepend(n);
 })();

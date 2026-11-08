@@ -7,7 +7,7 @@
 <title>Arashi Arena</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="assets/site.css?v=4">
+<link rel="stylesheet" href="assets/site.css?v=5">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: full-bleed 3D arena; HUD floats at the edges — brand + count on top, search and seat card docked at the bottom. */
@@ -122,7 +122,7 @@ form.search{width:min(560px,100%);display:flex;align-items:center;gap:6px;paddin
 </style>
 </head>
 <body>
-<script src="assets/site.js?v=4"></script>
+<script src="assets/site.js?v=5"></script>
 
 
 <div id="scene" aria-label="3D arena — drag to rotate, scroll or pinch to zoom"></div>
@@ -197,8 +197,8 @@ form.search{width:min(560px,100%);display:flex;align-items:center;gap:6px;paddin
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
-<script src="assets/ninja.js?v=4"></script>
-<script src="assets/fight.js?v=4"></script>
+<script src="assets/ninja.js?v=5"></script>
+<script src="assets/fight.js?v=5"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/utils/BufferGeometryUtils.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/shaders/CopyShader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
@@ -534,6 +534,20 @@ const plaqueTex=canvasTex(512,240,(g,w,h)=>{ g.fillStyle='#1b130e'; g.fillRect(0
   g.fillStyle='#f3eadb'; g.font='800 40px "Shippori Mincho B1", Georgia, serif'; g.fillText('@'+fightA,w/2,112); g.fillStyle='#d4452f'; g.font='800 30px "Shippori Mincho B1", Georgia, serif'; g.fillText('VS',w/2,152); g.fillStyle='#f3eadb'; g.font='800 40px "Shippori Mincho B1", Georgia, serif'; g.fillText('@'+fightB,w/2,198); });
 const plaque=new THREE.Mesh(new THREE.BoxGeometry(3.4,1.6,.18),[woodD,woodD,woodD,woodD,toon(0xffffff,{map:plaqueTex}),toon(0xffffff,{map:plaqueTex})]); plaque.position.y=5.25; torii.add(plaque);
 shadowy(torii); pointLight(polar(40,0,6), 1.0, 2.2, 22);
+// the Arashi Academy crest replaces the placeholder art once the logo has loaded
+const crestImg=new Image(); crestImg.onload=()=>{ const c=bigBannerTex.image, g=c.getContext('2d'), w=c.width, h=c.height, cx=w/2;
+  g.fillStyle='#0b0a0a'; g.fillRect(0,0,w,h); g.strokeStyle='#ede6da'; g.lineWidth=6; g.strokeRect(14,14,w-28,h-28); g.globalAlpha=.5; g.setLineDash([10,8]); g.lineWidth=3; g.strokeRect(26,26,w-52,h-52); g.setLineDash([]); g.globalAlpha=1;
+  g.drawImage(crestImg,24,44,w-48,w-48);
+  g.fillStyle='#ede6da'; g.textAlign='center'; g.textBaseline='middle'; g.font='800 52px "Shippori Mincho B1", Georgia, serif'; [...'ARASHI'].forEach((ch,i)=>g.fillText(ch,cx,330+i*66));
+  g.fillStyle='#b3121b'; g.fillRect(cx-40,722,80,5);
+  g.fillStyle='#ede6da'; g.font='700 30px "Zen Kaku Gothic New", sans-serif'; [...'ACADEMY'].forEach((ch,i)=>g.fillText(ch,cx,768+i*36));
+  g.beginPath(); g.moveTo(14,h-14); g.lineTo(cx,h-70); g.lineTo(w-14,h-14); g.fillStyle='#b3121b'; g.fill();
+  bigBannerTex.needsUpdate=true;
+  const t=new THREE.CanvasTexture((()=>{ const k=document.createElement('canvas'); k.width=k.height=512; k.getContext('2d').drawImage(crestImg,0,0,512,512); return k; })()); t.encoding=bigBannerTex.encoding;
+  const disc=new THREE.Mesh(new THREE.CircleGeometry(1.15,48), new THREE.MeshBasicMaterial({map:t,transparent:true,side:THREE.DoubleSide,toneMapped:false})); disc.position.set(0,8.65,0); torii.add(disc);
+  add(torii,new THREE.BoxGeometry(.25,1,.25),toon(0x16110d),[0,7.9,-.05],null,null,0); };
+crestImg.src='assets/brand/arashi-badge.svg';
+
 
 const gong=new THREE.Group(); gong.position.copy(polar(26.4,0,.5)); scene.add(gong);
 add(gong,new THREE.BoxGeometry(5,.5,1.6),stoneD,[0,.25,0],null,null,0);
