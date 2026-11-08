@@ -24,7 +24,7 @@ export default async (req) => {
   const rank = d.type === 'Subscription' ? (RANK_OF_TIER[tier] || 0) : 0;
   const items = (d.shop_items || []).map(i => i.direct_link_code).filter(Boolean);
   // single item bought with a $2+ tip and a site code
-  if (claimItem && d.type === 'Donation' && parseFloat(d.amount) >= 2) items.push(claimItem);
+  if (claimItem && (d.type === 'Donation' || d.type === 'Tip') && parseFloat(d.amount) >= 2) items.push(claimItem);
   const pay = { id, type: d.type, tier: d.tier_name || null, rank, items, amount: d.amount, currency: d.currency, from: d.from_name || null,
     email: d.email || null, message: msg.slice(0, 300), code, handle, at: d.timestamp || new Date().toISOString(), firstSub: !!d.is_first_subscription_payment };
   await store.setJSON('pay/' + id, pay);
