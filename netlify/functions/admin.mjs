@@ -3,7 +3,7 @@
 //   POST /api/admin {action:'verify', handle}          → confirm after the buyer DMed the code from that account
 //   POST /api/admin {action:'unverify', handle}
 //   POST /api/admin {action:'assign', payment, handle} → attach an unmatched payment to a handle
-import { db, cleanHandle, validHandle, json, preflight, isAdmin, RANK_OF_TIER, MEMBERSHIP_DAYS } from './_lib.mjs';
+import { db, cleanHandle, validHandle, json, preflight, isAdmin, MEMBERSHIP_DAYS, assignSeat } from './_lib.mjs';
 
 export default async (req) => {
   const pre = preflight(req); if (pre) return pre;
@@ -20,13 +20,14 @@ export default async (req) => {
   const key = 'ninja/' + h;
   if (b.action === 'verify' || b.action === 'unverify') {
     const r = await store.get(key, { type: 'json' }); if (!r) return json({ error: 'no purchase for that handle' }, 404);
-    r.verified = b.action === 'verify'; r.verifiedAt = Date.now(); await store.setJSON(key, r); return json({ ok: true, ninja: r });
+    r.verified = b.action === 'verify'; r.verifiedAt = Date.now(); if (r.verified) await assignSeat(store, r); else delete r.seat; await store.setJSON(key, r); return json({ ok: true, ninja: r });
   }
   if (b.action === 'assign') {
     const p = await store.get('unmatched/' + b.payment, { type: 'json' }); if (!p) return json({ error: 'no such payment' }, 404);
     const r = (await store.get(key, { type: 'json' })) || { handle: h, verified: false, rank: 0, items: [], payments: [] };
     if (p.rank) { r.rank = Math.max(p.rank, r.rankUntil > Date.now() ? r.rank : 0); r.rankUntil = Date.now() + MEMBERSHIP_DAYS * 864e5; }
     r.items = [...new Set([...(r.items || []), ...(p.items || [])])]; r.payments = [...(r.payments || []), p.id]; r.email = r.email || p.email;
+    if (r.verified) await assignSeat(store, r);
     await store.setJSON(key, r); await store.delete('unmatched/' + b.payment); return json({ ok: true, ninja: r });
   }
   return json({ error: 'unknown action' }, 400);

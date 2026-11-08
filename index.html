@@ -10,7 +10,7 @@
 <meta property="og:image" content="https://raleposao-spec.github.io/arashi_academy/assets/brand/arashi-badge-1024.png">
 <link rel="icon" type="image/png" href="assets/brand/arashi-mark-64.png">
 <link rel="apple-touch-icon" href="assets/brand/arashi-badge-180.png">
-<link rel="stylesheet" href="assets/site.css?v=7">
+<link rel="stylesheet" href="assets/site.css?v=8">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: full-bleed 3D arena; HUD floats at the edges — brand + count on top, search and seat card docked at the bottom. */
@@ -125,7 +125,7 @@ form.search{width:min(560px,100%);display:flex;align-items:center;gap:6px;paddin
 </style>
 </head>
 <body>
-<script src="assets/site.js?v=7"></script>
+<script src="assets/site.js?v=8"></script>
 
 
 <div id="scene" aria-label="3D arena — drag to rotate, scroll or pinch to zoom"></div>
@@ -193,8 +193,8 @@ form.search{width:min(560px,100%);display:flex;align-items:center;gap:6px;paddin
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
-<script src="assets/ninja.js?v=7"></script>
-<script src="assets/fight.js?v=7"></script>
+<script src="assets/ninja.js?v=8"></script>
+<script src="assets/fight.js?v=8"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/utils/BufferGeometryUtils.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/shaders/CopyShader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
@@ -636,6 +636,8 @@ const lodgeSeats=[]; for(let row=0;row<2;row++) for(let j=0;j<12;j++) lodgeSeats
 [-3.0,-1.4].forEach(z=>{ const bn=new THREE.Mesh(new THREE.BoxGeometry(16,.28,.5),woodD); bn.position.set(0,LY+.64,z+.05); lodge.add(bn); });
 totalSeats+=lodgeSeats.length;
 let ROSTER={people:[],demo:true}; try{ ROSTER=await (await fetch('data/followers.json',{cache:'no-cache'})).json(); }catch(e){ console.warn('roster not loaded',e); }
+// confirmed Ko-fi buyers sit in their rank's rows (seats handed out by the backend)
+try{ const pd=await (await fetch(ARASHI.API+'/api/paid')).json(); const ph=new Set(pd.people.map(p=>p[0])); ROSTER.people=ROSTER.people.filter(p=>!ph.has(p[0])).concat(pd.people); }catch(e){ console.warn('paid seats not loaded',e); }
 ROSTER.people.forEach(([h,clan,rank,row,seat,w,l])=>{
   if(rank===3){ const p=lodgeSeats[seat-1]; if(p) people.push({h,clan,rank,row,seat,w,l,x:p.x,y:p.y,z:p.z}); return; }
   const [a0,a1]=sectors[clan], i=row-1, r=rowR(i)+.22, n=seatCount[clan][i]; if(!n||seat>n) return; const a=a0+(seat-.5)*(a1-a0)/n;

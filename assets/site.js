@@ -32,7 +32,8 @@ window.ARASHI = {
     if (!p && st && st.verified) { let h = 0; for (const c of handle) h = (h * 31 + c.charCodeAt(0)) >>> 0; p = { handle, clan: h % 5, rank: 0, row: 0, seat: 0, w: 0, l: 0 }; }
     if (!p) return null;
     p = { ...p, owned: (st && st.items) || [] };
-    if (st && st.verified && st.rank > p.rank) p.rank = st.rank;
+    if (st && st.verified && st.seat) { p.rank = st.seat.rank; p.row = st.seat.row; p.seat = st.seat.seat; if (st.clan != null) p.clan = st.clan; }
+    else if (st && st.verified && st.rank > p.rank) p.rank = st.rank;
     return p;
   },
   seatText(p) { if (!p.row && !p.seat) return 'Seat assigned with the next follower import'; return p.rank === 3 ? "Master's lodge · Seat " + p.seat : this.CLANS[p.clan].name + ' stand · Row ' + p.row + ' · Seat ' + p.seat; },

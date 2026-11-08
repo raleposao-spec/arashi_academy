@@ -1,6 +1,6 @@
 // Ko-fi webhook: Ko-fi POSTs every payment here (form field "data" with JSON).
 // Set the URL on Ko-fi → Settings → API → Webhooks, and the KOFI_TOKEN env var to the Verification Token shown there.
-import { db, RANK_OF_TIER, MEMBERSHIP_DAYS, cleanHandle, validHandle } from './_lib.mjs';
+import { db, RANK_OF_TIER, MEMBERSHIP_DAYS, cleanHandle, validHandle, assignSeat } from './_lib.mjs';
 
 export default async (req) => {
   if (req.method !== 'POST') return new Response('Method not allowed', { status: 405 });
@@ -35,6 +35,7 @@ export default async (req) => {
     rec.items = [...new Set([...(rec.items || []), ...items])];
     rec.payments = [...(rec.payments || []), id].slice(-50);
     rec.email = rec.email || pay.email; rec.code = rec.code || code; rec.updated = Date.now();
+    if (rec.verified) await assignSeat(store, rec);   // renewals / upgrades of confirmed buyers move straight away
     await store.setJSON(key, rec);
   } else {
     await store.setJSON('unmatched/' + id, pay);                           // no handle: shows up in the admin page to sort out by hand
