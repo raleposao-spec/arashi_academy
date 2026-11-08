@@ -1,3 +1,6 @@
 [build]
   publish = "."
   functions = "netlify/functions"
+  # Netlify counts every production deploy against the free credits (15 each).
+  # The public site is served from GitHub Pages; only redeploy here when the backend changes.
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- netlify/ netlify.toml package.json"
