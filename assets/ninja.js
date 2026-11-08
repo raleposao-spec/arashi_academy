@@ -234,11 +234,27 @@ window.NINJA = (function () {
 
     /* ----- weapon ----- */
     const W = o.weapon, metal = M('#8d939c'), dark = M('#1c1c20'), wood = M('#6b4a2e');
-    if (W === 'Kunai & shuriken' || (!W && rank === 0)) { const g = new T.Group(); g.position.set(.075, -.2, .03); bones.thR.add(g); put(g, cone(.02, .09, 4), metal, [0, -.06, 0], [Math.PI, 0, 0]); put(g, cyl(.008, .008, .07, 6), dark, [0, .02, 0]); put(g, tor(.014, .004, 4, 10), metal, [0, .065, 0]);
-      const st = new T.Group(); st.position.set(-.155, .02, -.02); hips.add(st); for (let i = 0; i < 4; i++) put(st, box(.006, .07, .016), metal, [0, 0, 0], [0, 0, i * Math.PI / 4], null, false); }
+    const steel = M('#c9d0d8', { emissive: '#1a1d22' }), wrap = M('#8e2a22');
+    const star = (parent, pos, rot, sz) => { const g = new T.Group(); g.position.set(...pos); if (rot) g.rotation.set(...rot); parent.add(g);
+      for (let i = 0; i < 4; i++) { const c = put(g, cone(.022 * sz, .085 * sz, 4), steel, [Math.sin(i * Math.PI / 2) * .05 * sz, Math.cos(i * Math.PI / 2) * .05 * sz, 0], [0, 0, -i * Math.PI / 2]); c.scale.z = .25; }
+      put(g, cyl(.024 * sz, .024 * sz, .012, 10), steel, [0, 0, 0], [Math.PI / 2, 0, 0]); put(g, cyl(.008 * sz, .008 * sz, .016, 8), dark, [0, 0, 0], [Math.PI / 2, 0, 0], null, false); return g; };
+    if (W === 'Kunai & shuriken' || (!W && rank === 0)) {
+      // kunai in the right hand, reverse grip: blade points down past the fist
+      const k = new T.Group(); k.position.set(0, -.05, .02); bones.handR.add(k);
+      put(k, cyl(.011, .011, .1, 8), wrap, [0, .03, 0]); put(k, tor(.022, .006, 6, 14), steel, [0, .1, 0]);
+      const bl = put(k, cone(.034, .17, 4), steel, [0, -.1, 0], [Math.PI, Math.PI / 4, 0]); bl.scale.z = .35;
+      // shuriken in the left hand, plus two on the thigh holster
+      star(bones.handL, [0, -.07, .03], [0, 0, .3], 1.25);
+      const h = new T.Group(); h.position.set(.085, -.16, .02); bones.thR.add(h); put(h, box(.06, .1, .02), M('#2a2420'), [0, 0, 0]);
+      star(h, [.035, .02, .012], [0, Math.PI / 2, .4], .8); star(h, [.035, -.03, .012], [0, Math.PI / 2, 1.1], .8); }
     if (W === 'Bo staff') put(spine, cyl(.014, .014, 1.5, 8), wood, [0, .15, -.15], [0, 0, .65]);
     if (W === 'Odachi' || (!W && rank === 2)) { const g = new T.Group(); g.position.set(0, .16, -.16); g.rotation.z = .62; spine.add(g); put(g, box(.022, W === 'Odachi' ? 1.0 : .7, .04), dark, [0, -.1, 0]); put(g, cyl(.017, .017, .18, 8), M('#2a1a14'), [0, W === 'Odachi' ? .48 : .33, 0]); put(g, box(.07, .012, .05), M('#d9a63f'), [0, W === 'Odachi' ? .38 : .23, 0], null, null, false); }
-    if (W === 'Kusarigama') { const g = new T.Group(); g.position.set(-.16, -.02, 0); hips.add(g); put(g, cyl(.012, .012, .2, 6), wood, [0, 0, 0]); put(g, box(.12, .02, .008), metal, [.05, .09, 0], [0, 0, -.3]); put(g, tor(.05, .008, 5, 14), metal, [0, -.11, 0], [Math.PI / 2, 0, 0]); }
+    if (W === 'Kusarigama') { // sickle in the right hand, chain hanging down to the weight
+      const g = new T.Group(); g.position.set(0, -.05, .02); bones.handR.add(g);
+      put(g, cyl(.014, .014, .3, 8), wood, [0, .06, 0]); put(g, cyl(.017, .017, .03, 8), wrap, [0, .2, 0]);
+      const bl = put(g, new T.TorusGeometry(.13, .016, 4, 18, 1.7), steel, [.13, .21, 0], [0, 0, 1.5]); bl.scale.z = .45;
+      for (let i = 0; i < 14; i++) put(g, tor(.014, .004, 4, 8), metal, [Math.sin(i * .35) * .03, -.1 - i * .026, 0], [i % 2 ? Math.PI / 2 : 0, 0, 0], null, false);
+      put(g, new T.SphereGeometry(.035, 10, 8), dark, [Math.sin(14 * .35) * .03, -.1 - 14 * .026 - .02, 0]); }
     if (W === 'War fan') { const g = new T.Group(); g.position.set(0, .2, -.15); spine.add(g); put(g, new T.CylinderGeometry(.32, .32, .02, 16, 1, false, -.9, 1.8), M('#9b2a22'), [0, 0, 0], [Math.PI / 2, 0, 0]); }
     if (W === 'Twin sai') [-1, 1].forEach(s => { const g = new T.Group(); g.position.set(s * .07, .02, -.12); g.rotation.z = s * .5; hips.add(g); put(g, cyl(.008, .008, .3, 6), metal, [0, 0, 0]); put(g, box(.1, .008, .008), metal, [0, .08, 0]); });
     if (W === 'Summoning scroll') { put(spine, cyl(.07, .07, .6, 16), M('#d9c9a2'), [0, .2, -.17], [0, 0, Math.PI / 2]); [-1, 1].forEach(s => put(spine, cyl(.08, .08, .03, 16), M('#9b2a22'), [s * .31, .2, -.17], [0, 0, Math.PI / 2], null, false)); }
@@ -256,11 +272,11 @@ window.NINJA = (function () {
       if (o.mask === 'Oni mask') [-1, 1].forEach(s => put(mk, cone(.012, .05, 5), M('#e8dcc8'), [s * .035, .065, 0], [0, 0, -s * .4]));
       if (o.mask === 'Crow mask') put(mk, cone(.02, .08, 6), M('#e7b54a'), [0, -.01, .06], [Math.PI / 2, 0, 0]); }
     let aura = null;
-    if (o.aura || rank === 3) { const N = 90, geo = new T.BufferGeometry(), pos = new Float32Array(N * 3), col = new Float32Array(N * 3), data = [];
-      const c1 = rank === 3 && !o.aura ? new T.Color().setRGB(2.4, 1.7, .5) : new T.Color(clan.c2).multiplyScalar(2.2);
+    if (o.aura || rank === 3) { const N = rank === 3 ? 150 : 90, geo = new T.BufferGeometry(), pos = new Float32Array(N * 3), col = new Float32Array(N * 3), data = [];
+      const c1 = rank === 3 ? new T.Color().setRGB(2.6, 1.8, .45) : new T.Color(clan.c2).multiplyScalar(2.2);
       for (let i = 0; i < N; i++) { data.push({ a: R() * 7, r: .22 + R() * .3, y: R() * 1.9, v: .15 + R() * .35 }); col.set([c1.r, c1.g, c1.b], i * 3); }
       geo.setAttribute('position', new T.BufferAttribute(pos, 3)); geo.setAttribute('color', new T.BufferAttribute(col, 3));
-      aura = new T.Points(geo, new T.PointsMaterial({ size: .05, map: glow(), vertexColors: true, transparent: true, depthWrite: false, blending: T.AdditiveBlending })); root.add(aura);
+      aura = new T.Points(geo, new T.PointsMaterial({ size: rank === 3 ? .07 : .05, map: glow(), vertexColors: true, transparent: true, depthWrite: false, blending: T.AdditiveBlending })); root.add(aura);
       anim.push((dt, t) => { const p = geo.attributes.position; data.forEach((d, i) => { d.y += dt * d.v; if (d.y > 2) d.y = 0; const a = d.a + t * .3; p.setXYZ(i, Math.sin(a) * d.r, d.y + .05, Math.cos(a) * d.r * .8); }); p.needsUpdate = true; }); }
 
     /* ----- shadows + pose API ----- */
@@ -270,8 +286,13 @@ window.NINJA = (function () {
     function setPose(p, k = 1) { JOINTS.forEach(j => { const b = bones[j]; if (!b) return; const v = (p && p[j]) || [0, 0, 0], c = b.userData.cur, r = b.userData.rest;
       for (let i = 0; i < 3; i++) c[i] += (v[i] - c[i]) * k; b.rotation.set(r[0] + c[0], r[1] + c[1], r[2] + c[2]); }); }
     setPose(null, 1);
-    function update(dt, t) { anim.forEach(f => f(dt, t)); F.update(dt, t); }
-    return { group: root, bones, face: F, setPose, update, JOINTS, outfit: outfitName, rank, clan: o.clan == null ? 2 : o.clan };
+    // Sennin float: hovers above the ground in a gold glow (fights turn this off with float:false)
+    const floats = rank === 3 && o.float !== false, hip0 = bones.hips.position.y; let halo = null, ring = null;
+    if (floats) { halo = new T.Sprite(new T.SpriteMaterial({ map: glow(), color: new T.Color().setRGB(1.6, 1.1, .3), transparent: true, opacity: .55, depthWrite: false, blending: T.AdditiveBlending })); halo.scale.set(1.6, 2.4, 1); halo.position.set(0, 1.15, -.25); root.add(halo);
+      ring = new T.Mesh(new T.RingGeometry(.32, .5, 48), new T.MeshBasicMaterial({ color: new T.Color().setRGB(2.4, 1.6, .4), transparent: true, opacity: .5, depthWrite: false, blending: T.AdditiveBlending, side: T.DoubleSide })); ring.rotation.x = -Math.PI / 2; ring.position.y = .02; root.add(ring); }
+    function update(dt, t) { anim.forEach(f => f(dt, t)); F.update(dt, t);
+      if (floats) { const b = Math.sin(t * 1.7); bones.hips.position.y = hip0 + .34 + .05 * b; halo.material.opacity = .45 + .12 * Math.sin(t * 2.3); ring.scale.setScalar(1 + .08 * b); ring.material.opacity = .35 + .15 * Math.sin(t * 2.3); } }
+    return { group: root, floats, bones, face: F, setPose, update, JOINTS, outfit: outfitName, rank, clan: o.clan == null ? 2 : o.clan };
   }
   return { build, CLANS, OUTFITS, RANK_OUTFIT, SKINS, HAIRS, HAIRSTYLES, drawGlyph, canvasTex, glow, M, OUT };
 })();
