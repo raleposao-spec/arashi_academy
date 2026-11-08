@@ -10,7 +10,7 @@
 <meta property="og:image" content="https://raleposao-spec.github.io/arashi_academy/assets/brand/arashi-badge-1024.png">
 <link rel="icon" type="image/png" href="assets/brand/arashi-mark-64.png">
 <link rel="apple-touch-icon" href="assets/brand/arashi-badge-180.png">
-<link rel="stylesheet" href="assets/site.css?v=9">
+<link rel="stylesheet" href="assets/site.css?v=10">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: full-bleed 3D line-up of the four ranks; rank tabs on top, clan + view controls docked at the bottom, labels float over each ninja. */
@@ -101,7 +101,7 @@ button{font:inherit;color:inherit}
 </style>
 </head>
 <body>
-<script src="assets/site.js?v=9"></script>
+<script src="assets/site.js?v=10"></script>
 
 
 <section class="stage" aria-label="The four ranks in 3D">
@@ -156,7 +156,7 @@ button{font:inherit;color:inherit}
     <p class="fine">Ranks are monthly and you can cancel anytime. Gear you bought one-off stays yours; your rank goes back to Genin. The first 100 paid members are carved on the Founders stone at the arena gate. Under 18? Ask a parent before you pay. This is an original fan-made world, not affiliated with any anime.</p>
   </section>
 </main>
-<script src="assets/items.js?v=9"></script>
+<script src="assets/items.js?v=10"></script>
 <script>
 (function(){
   const go=()=>{ if(!window.ARASHI||!window.ITEMS) return setTimeout(go,50);
@@ -182,8 +182,8 @@ button{font:inherit;color:inherit}
 </script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
-<script src="assets/ninja.js?v=9"></script>
-<script src="assets/fight.js?v=9"></script>
+<script src="assets/ninja.js?v=10"></script>
+<script src="assets/fight.js?v=10"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/shaders/CopyShader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/postprocessing/Pass.js"></script>
@@ -312,9 +312,11 @@ function loop(now){ const dt=Math.min(.05,(now-last)/1000); last=now; const t=no
   }
   stands.forEach((st,i)=>{ tmp.set(st.position.x, i===3?2.2:2.05, 0).project(camera); const L=labels[i];
     const vis=tmp.z<1 && Math.abs(tmp.x)<1.1 && (focus<0 || focus===i);
-    L.style.opacity=vis?1:0; L.style.left=((tmp.x+1)/2*SW())+'px'; L.style.top=((1-tmp.y)/2*SH())+'px'; });
+    const minTop=TABS.getBoundingClientRect().bottom-STAGE.getBoundingClientRect().top+L.offsetHeight+6; /* never under the rank tabs */
+    L.style.opacity=vis?1:0; L.style.left=((tmp.x+1)/2*SW())+'px'; L.style.top=Math.max(minTop,(1-tmp.y)/2*SH())+'px'; });
   grade.uniforms.time.value=t%100;
   controls.update(); composer.render(); requestAnimationFrame(loop); }
+const TABS=document.getElementById('tabs');
 requestAnimationFrame(loop);
 window.__ranks={flyTo,setView:v=>{targetRot=v}};
 })();

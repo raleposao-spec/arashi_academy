@@ -15,13 +15,14 @@
 a[aria-disabled="true"]{opacity:.55;cursor:not-allowed}
 
 /* Unlock dialog */
-dialog.unlock{max-width:460px;width:calc(100% - 32px);border:1px solid rgba(243,234,219,.16);border-radius:14px;background:#1b1612;color:#f3eadb;padding:22px 22px 18px;font-family:"Zen Kaku Gothic New",system-ui,sans-serif}
+dialog.unlock{margin:auto;max-height:calc(100dvh - 32px);overflow:auto;box-sizing:border-box;max-width:460px;width:calc(100% - 32px);border:1px solid rgba(243,234,219,.16);border-radius:14px;background:#1b1612;color:#f3eadb;padding:22px 22px 18px;font-family:"Zen Kaku Gothic New",system-ui,sans-serif}
 dialog.unlock::backdrop{background:rgba(8,6,5,.7);backdrop-filter:blur(3px)}
 .unlock .u-x{position:absolute;right:10px;top:8px;margin:0}.unlock .u-x button{background:none;border:0;color:#b0a28d;font-size:26px;cursor:pointer;line-height:1}
 .unlock .u-eye{margin:0;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#e7b54a;font-weight:700}
 .unlock h2{margin:4px 0 14px;font-family:"Shippori Mincho B1",Georgia,serif;font-weight:800;font-size:24px}
 .unlock .u-steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:14px;font-size:14px;line-height:1.55;color:#d6cab6}
-.unlock .u-steps b{color:#f3eadb;display:block;margin-bottom:5px}
+.unlock .u-steps li>b:first-child{color:#f3eadb;display:block;margin-bottom:5px}
+.unlock .u-steps strong{color:#f3eadb}
 .unlock .u-off{opacity:.4;pointer-events:none}
 .unlock .u-row{display:flex;gap:6px;align-items:center}.unlock .u-row span{color:#e7b54a;font-weight:800}
 .unlock input{flex:1;min-width:0;background:rgba(255,255,255,.06);border:1px solid rgba(243,234,219,.16);border-radius:7px;padding:9px 10px;color:inherit;font:inherit}
@@ -33,7 +34,7 @@ dialog.unlock::backdrop{background:rgba(8,6,5,.7);backdrop-filter:blur(3px)}
 .u-err{margin:6px 0 0;color:#ff8a76;font-size:13px;min-height:0}
 
 .unlock .u-ok{display:flex;gap:8px;align-items:flex-start;margin-top:10px;font-size:13px;line-height:1.45;color:#d6cab6;cursor:pointer}
-.unlock .u-ok input{margin-top:3px;accent-color:#e7b54a}
+.unlock .u-ok input{flex:none;width:17px;height:17px;padding:0;margin:2px 0 0;accent-color:#e7b54a}
 .unlock .u-ok a{color:#e7b54a}
 .u-pay.is-off{opacity:.4;cursor:not-allowed}
 .sitefoot{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px;padding:26px 16px 34px;font:13px/1.5 "Zen Kaku Gothic New",system-ui,sans-serif;color:#b0a28d;border-top:1px solid rgba(243,234,219,.1);text-align:center}

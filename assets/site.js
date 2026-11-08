@@ -57,9 +57,9 @@ window.ARASHI = {
       <ol class="u-steps">
         <li><b>Your Instagram</b><div class="u-row"><span>@</span><input id="uH" value="${H}" placeholder="your_handle" autocapitalize="off" spellcheck="false"><button type="button" id="uGo">Get my code</button></div><p class="u-err" id="uErr" role="alert"></p></li>
         <li class="u-off" id="uS2"><b>${item ? 'Send a $2 support on Ko-fi' : 'Pick your tier on Ko-fi'}</b> and paste this in the message: <code id="uCode">—</code> <button type="button" class="u-copy" id="uCopy">Copy</button>
-          <label class="u-ok"><input type="checkbox" id="uAgree"> I agree to the <a href="terms.html" target="_blank">Terms</a> and want my perks to start as soon as they're confirmed.</label>
+          <label class="u-ok"><input type="checkbox" id="uAgree"><span>I agree to the <a href="terms.html" target="_blank">Terms</a> and want my perks to start as soon as they're confirmed.</span></label>
           <a class="u-pay is-off" id="uPay" href="${url}" target="_blank" rel="noopener" aria-disabled="true">Open Ko-fi →</a></li>
-        <li class="u-off" id="uS3"><b>DM the same code</b> to ${this.INSTAGRAM ? `<a href="https://instagram.com/${this.INSTAGRAM}" target="_blank" rel="noopener">@${this.INSTAGRAM}</a>` : 'our Instagram'} from @<span id="uH2">you</span>. That proves the account is yours, so nobody else can take your rank. Your seat and gear update once we confirm. <b>Keep the code</b>: you use it on My Ninja to save your look for the fights.</li>
+        <li class="u-off" id="uS3"><b>DM the same code</b> to ${this.INSTAGRAM ? `<a href="https://instagram.com/${this.INSTAGRAM}" target="_blank" rel="noopener">@${this.INSTAGRAM}</a>` : 'our Instagram'} from @<span id="uH2">you</span>. That proves the account is yours, so nobody else can take your rank. Your seat and gear update once we confirm. <strong>Keep the code</strong>: you use it on My Ninja to save your look for the fights.</li>
       </ol>`;
     const $ = id => d.querySelector('#' + id);
     $('uGo').onclick = async () => {
