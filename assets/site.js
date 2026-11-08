@@ -1,7 +1,10 @@
 /* Arashi Academy — shared config + top navigation */
 window.ARASHI = {
   // Set this to your Ko-fi username (ko-fi.com/<username>) and every Join / Buy button goes live.
-  KOFI_USER: '',
+  KOFI_USER: 'arashiacademy',
+  // Backend (Netlify Functions): same site when served from Netlify, otherwise the Netlify address.
+  API: /netlify\.app$/.test(location.hostname) ? '' : 'https://arashi-academy.netlify.app',
+  async status(handle) { try { const r = await fetch(this.API + '/api/status?h=' + encodeURIComponent(handle), { cache: 'no-store' }); return r.ok ? await r.json() : null; } catch (e) { return null; } },
   kofi(path) { return this.KOFI_USER ? 'https://ko-fi.com/' + this.KOFI_USER + (path || '') : null; },
   CLANS: [
     { name: 'Ember', el: 'Fire', c: '#e0522a', c2: '#f5a03a' },
@@ -22,13 +25,51 @@ window.ARASHI = {
     this._r = j.people.map(([handle, clan, rank, row, seat, w, l]) => ({ handle, clan, rank, row, seat, w, l }));
     this._demo = !!j.demo; return this._r;
   },
-  seatText(p) { return p.rank === 3 ? "Master's lodge · Seat " + p.seat : this.CLANS[p.clan].name + ' stand · Row ' + p.row + ' · Seat ' + p.seat; },
+  // Roster entry + confirmed Ko-fi purchases from the backend. Returns null if the handle has neither.
+  async lookup(handle) {
+    const [all, st] = await Promise.all([this.roster(), this.status(handle)]);
+    let p = all.find(x => x.handle === handle);
+    if (!p && st && st.verified) { let h = 0; for (const c of handle) h = (h * 31 + c.charCodeAt(0)) >>> 0; p = { handle, clan: h % 5, rank: 0, row: 0, seat: 0, w: 0, l: 0 }; }
+    if (!p) return null;
+    p = { ...p, owned: (st && st.items) || [] };
+    if (st && st.verified && st.rank > p.rank) p.rank = st.rank;
+    return p;
+  },
+  seatText(p) { if (!p.row && !p.seat) return 'Seat assigned with the next follower import'; return p.rank === 3 ? "Master's lodge · Seat " + p.seat : this.CLANS[p.clan].name + ' stand · Row ' + p.row + ' · Seat ' + p.seat; },
   wireKofi(root = document) {
     root.querySelectorAll('[data-kofi]').forEach(a => {
       const url = this.kofi(a.dataset.kofi);
-      if (url) { a.href = url; a.target = '_blank'; a.rel = 'noopener'; a.removeAttribute('aria-disabled'); }
-      else { a.removeAttribute('href'); a.setAttribute('aria-disabled', 'true'); a.title = 'Ko-fi opens soon'; if (a.dataset.soon !== 'keep') a.textContent = 'Opens soon'; }
+      if (!url) { a.removeAttribute('href'); a.setAttribute('aria-disabled', 'true'); a.title = 'Ko-fi opens soon'; if (a.dataset.soon !== 'keep') a.textContent = 'Opens soon'; return; }
+      a.href = url; a.target = '_blank'; a.rel = 'noopener'; a.removeAttribute('aria-disabled');
+      if (!a.dataset.wired) { a.dataset.wired = '1'; a.addEventListener('click', e => { e.preventDefault(); this.unlock(url, a.dataset.what || a.textContent.trim(), a.dataset.item); }); }
     });
+  },
+  // Unlock flow: @handle → one-time code → pay on Ko-fi with the code in the message → DM the code from that Instagram account.
+  unlock(url, what, item) {
+    let d = document.getElementById('unlockDlg');
+    if (!d) { d = document.createElement('dialog'); d.id = 'unlockDlg'; d.className = 'unlock'; document.body.appendChild(d); d.addEventListener('click', e => { if (e.target === d) d.close(); }); }
+    const H = localStorage.getItem('arashi.me') || '';
+    d.innerHTML = `<form method="dialog" class="u-x"><button aria-label="Close">×</button></form>
+      <p class="u-eye">Unlock</p><h2>${what.replace(/</g, '&lt;')}</h2>
+      <ol class="u-steps">
+        <li><b>Your Instagram</b><div class="u-row"><span>@</span><input id="uH" value="${H}" placeholder="your_handle" autocapitalize="off" spellcheck="false"><button type="button" id="uGo">Get my code</button></div><p class="u-err" id="uErr" role="alert"></p></li>
+        <li class="u-off" id="uS2"><b>${item ? 'Send a $2 support on Ko-fi' : 'Pick your tier on Ko-fi'}</b> and paste this in the message: <code id="uCode">—</code> <button type="button" class="u-copy" id="uCopy">Copy</button><a class="u-pay" id="uPay" href="${url}" target="_blank" rel="noopener">Open Ko-fi →</a></li>
+        <li class="u-off" id="uS3"><b>DM the same code</b> to our Instagram from @<span id="uH2">you</span>. That proves the account is yours, so nobody else can take your rank. Your ninja updates once we confirm.</li>
+      </ol>`;
+    const $ = id => d.querySelector('#' + id);
+    $('uGo').onclick = async () => {
+      const h = $('uH').value.trim().toLowerCase().replace(/^@+/, '');
+      if (!/^[a-z0-9._]{2,30}$/.test(h)) { $('uErr').textContent = 'Type your Instagram @handle.'; return; }
+      $('uErr').textContent = ''; $('uGo').disabled = true; $('uGo').textContent = '…';
+      let code = null;
+      try { const r = await fetch(this.API + '/api/claim', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ handle: h, item: item || null }) }); const j = await r.json(); code = j.code; if (!code) $('uErr').textContent = j.error || 'Try again.'; } catch (e) {}
+      if (!code) { code = '@' + h; if (!$('uErr').textContent) $('uErr').textContent = 'Could not make a code right now. Write your @handle in the Ko-fi message instead.'; }
+      try { localStorage.setItem('arashi.me', h); } catch (e) {}
+      $('uCode').textContent = code; $('uH2').textContent = h; $('uS2').classList.remove('u-off'); $('uS3').classList.remove('u-off');
+      $('uGo').disabled = false; $('uGo').textContent = 'New code';
+    };
+    $('uCopy').onclick = () => { navigator.clipboard?.writeText($('uCode').textContent); $('uCopy').textContent = 'Copied'; };
+    d.showModal(); if (!H) $('uH').focus();
   },
 };
 (function nav() {

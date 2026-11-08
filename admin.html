@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Academy Admin</title>
+<link rel="icon" type="image/png" href="assets/brand/arashi-mark-64.png">
+<style>
+:root{--ink:#120f0d;--card:#1b1612;--paper:#f3eadb;--muted:#b0a28d;--line:rgba(243,234,219,.14);--gold:#e7b54a;--red:#d4452f;--ok:#7fd3a6;color-scheme:dark}
+body{margin:0;background:var(--ink);color:var(--paper);font:15px/1.5 "Zen Kaku Gothic New",system-ui,sans-serif}
+main{max-width:900px;margin:0 auto;padding:28px 16px 80px}
+h1{font-family:"Shippori Mincho B1",Georgia,serif;font-size:30px;margin:0 0 4px;display:flex;gap:12px;align-items:center}
+h1 img{width:44px;height:44px}
+h2{font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin:28px 0 10px}
+p.help{color:var(--muted);margin:0 0 18px;max-width:640px}
+.key{display:flex;gap:8px;flex-wrap:wrap}
+input{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:7px;padding:9px 10px;color:inherit;font:inherit;min-width:0}
+button{font:inherit;border:0;border-radius:7px;padding:9px 13px;font-weight:700;cursor:pointer;background:rgba(255,255,255,.1);color:var(--paper)}
+button.go{background:var(--red);color:#fff}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:grid;grid-template-columns:1fr auto;gap:6px 14px;align-items:center}
+.card b{font-size:16px}.card small{color:var(--muted);display:block}
+.pill{font-size:11px;font-weight:700;letter-spacing:.1em;border-radius:4px;padding:2px 6px;background:var(--gold);color:var(--ink);margin-left:6px}
+code{font-family:"DM Mono",ui-monospace,monospace;color:var(--gold)}
+.empty{color:var(--muted)}
+#msg{min-height:1.4em;color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+  <h1><img src="assets/brand/arashi-badge-180.png" alt="">Academy Admin</h1>
+  <p class="help">Ko-fi buyers show up here. Check your Instagram DMs: when a buyer sent you their code from the account in the list, press <b>Confirm</b>. Only confirmed buyers get their rank on the site.</p>
+  <form class="key" id="kf"><input id="key" type="password" placeholder="Admin key" autocomplete="current-password" style="flex:1"><button class="go">Open</button></form>
+  <p id="msg" role="status"></p>
+  <h2>Waiting for Instagram confirmation</h2><div id="pending"></div>
+  <h2>Payments without a handle</h2><div id="unmatched"></div>
+  <h2>Confirmed ninjas</h2><div id="verified"></div>
+</main>
+<script src="assets/site.js?v=7"></script>
+<script>
+const A = ARASHI, $ = id => document.getElementById(id), RN = ['Genin', 'Chunin', 'Jonin', 'Sennin'];
+let KEY = ''; try { KEY = sessionStorage.getItem('arashi.admin') || ''; } catch (e) {}
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const api = (method, body) => fetch(A.API + '/api/admin', { method, headers: { 'content-type': 'application/json', 'x-admin-key': KEY }, body: body ? JSON.stringify(body) : undefined }).then(r => r.json());
+const until = r => r.rankUntil ? new Date(r.rankUntil).toLocaleDateString() : '—';
+function ninja(r, act) {
+  return `<div class="card"><div><b>@${esc(r.handle)}</b>${r.rank ? `<span class="pill">${RN[r.rank]}</span>` : ''}
+    <small>Code <code>${esc(r.code || '—')}</code> · rank until ${until(r)} · items ${esc((r.items || []).join(', ') || 'none')} · ${(r.payments || []).length} payment(s)${r.email ? ' · ' + esc(r.email) : ''}</small></div>
+    <button class="${act === 'verify' ? 'go' : ''}" data-act="${act}" data-h="${esc(r.handle)}">${act === 'verify' ? 'Confirm' : 'Undo'}</button></div>`;
+}
+async function load() {
+  if (!KEY) return;
+  $('msg').textContent = 'Loading…';
+  const d = await api('GET').catch(() => null);
+  if (!d || d.error) { $('msg').textContent = d && d.error ? d.error : 'Could not reach the backend.'; return; }
+  $('msg').textContent = '';
+  $('pending').innerHTML = d.pending.map(r => ninja(r, 'verify')).join('') || '<p class="empty">Nobody waiting.</p>';
+  $('verified').innerHTML = d.verified.map(r => ninja(r, 'unverify')).join('') || '<p class="empty">None yet.</p>';
+  $('unmatched').innerHTML = d.unmatched.map(p => `<div class="card"><div><b>${esc(p.from || 'Someone')}</b> · ${esc(p.type)} ${esc(p.tier || '')} · ${esc(p.amount)} ${esc(p.currency)}
+    <small>Message: “${esc(p.message || '')}” · ${esc(p.email || '')}</small></div>
+    <div style="display:flex;gap:6px"><input placeholder="@handle" data-pay="${esc(p.id)}" style="width:130px"><button data-act="assign" data-pay="${esc(p.id)}">Attach</button></div></div>`).join('') || '<p class="empty">All payments matched.</p>';
+}
+document.body.addEventListener('click', async e => {
+  const b = e.target.closest('button[data-act]'); if (!b) return;
+  const a = b.dataset.act; let body = { action: a, handle: b.dataset.h };
+  if (a === 'assign') body = { action: a, payment: b.dataset.pay, handle: document.querySelector(`input[data-pay="${b.dataset.pay}"]`).value };
+  b.disabled = true; const r = await api('POST', body).catch(() => null); $('msg').textContent = r && r.error ? r.error : 'Saved.'; load();
+});
+$('kf').onsubmit = e => { e.preventDefault(); KEY = $('key').value.trim(); try { sessionStorage.setItem('arashi.admin', KEY); } catch (e) {} load(); };
+load();
+</script>
+</body>
+</html>

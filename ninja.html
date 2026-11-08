@@ -8,7 +8,7 @@
 <meta property="og:image" content="https://raleposao-spec.github.io/arashi_academy/assets/brand/arashi-badge-1024.png">
 <link rel="icon" type="image/png" href="assets/brand/arashi-mark-64.png">
 <link rel="apple-touch-icon" href="assets/brand/arashi-badge-180.png">
-<link rel="stylesheet" href="assets/site.css?v=6">
+<link rel="stylesheet" href="assets/site.css?v=7">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap">
@@ -94,7 +94,7 @@ button,input,select{font:inherit;color:inherit}
 </style>
 </head>
 <body>
-<script src="assets/site.js?v=6"></script>
+<script src="assets/site.js?v=7"></script>
 <main class="page">
   <section class="stage" aria-label="Your ninja in 3D">
     <canvas id="cv" aria-label="3D view of your ninja. Drag to turn it."></canvas>
@@ -153,9 +153,9 @@ button,input,select{font:inherit;color:inherit}
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
-<script src="assets/items.js?v=6"></script>
-<script src="assets/ninja.js?v=6"></script>
-<script src="assets/fight.js?v=6"></script>
+<script src="assets/items.js?v=7"></script>
+<script src="assets/ninja.js?v=7"></script>
+<script src="assets/fight.js?v=7"></script>
 <script>
 (function () {
 const A = ARASHI, I = ITEMS, $ = id => document.getElementById(id), T = THREE;
@@ -189,9 +189,10 @@ function defaults() {
 const key = () => who ? 'arashi.loadout.' + who.handle : null;
 function load() { look = defaults(); saved = null; if (!key()) return; try { const s = JSON.parse(localStorage.getItem(key()) || 'null'); if (s) { saved = s; Object.assign(look, s); } } catch (e) {} sanitize(look); }
 function sanitize(L) { // drop anything the rank no longer unlocks
-  SLOTS.forEach(([k, , list]) => { if (L[k] == null) return; const it = list().find(x => x.name === L[k] || (x.val && L[k] === x.val)); if (!it || it.rank > rank) L[k] = defaults()[k] ?? null; }); }
+  SLOTS.forEach(([k, , list]) => { if (L[k] == null) return; const it = list().find(x => x.name === L[k] || (x.val && L[k] === x.val)); if (!it || isLocked(it)) L[k] = defaults()[k] ?? null; }); }
 function itemOf(k) { const s = SLOTS.find(x => x[0] === k); const v = look[k]; return v == null ? null : s[2]().find(x => x.name === v || (x.val && v === x.val)); }
-function lockedInLook() { return SLOTS.filter(([k]) => { const it = itemOf(k); return it && it.rank > rank; }).map(([k]) => itemOf(k)); }
+function isLocked(it) { return it.rank > rank && !(who && who.owned && who.owned.includes(I.slug(it.name))); }
+function lockedInLook() { return SLOTS.filter(([k]) => { const it = itemOf(k); return it && isLocked(it); }).map(([k]) => itemOf(k)); }
 
 /* ---------- 3D ---------- */
 const cv = $('cv'), R3 = new T.WebGLRenderer({ canvas: cv, antialias: true, alpha: true });
@@ -254,7 +255,7 @@ function renderSlots() {
   const out = SLOTS.map(([k, label, list, optional]) => {
     const items = list(); const cur = look[k];
     const opts = (optional ? [`<button class="opt none" type="button" data-k="${k}" data-v="" aria-pressed="${cur == null}"><i>None</i><span>None</span></button>`] : [])
-      .concat(items.map(it => { const v = it.val ?? it.name, on = cur === v, lock = it.rank > rank;
+      .concat(items.map(it => { const v = it.val ?? it.name, on = cur === v, lock = isLocked(it);
         return `<button class="opt${lock ? ' lock' : ''}" type="button" data-k="${k}" data-v="${String(v).replace(/"/g, '&quot;')}" aria-pressed="${on}" title="${it.name}${lock ? ' · unlocks at ' + cap(A.RANKS[it.rank].n) : ''}"><img src="${thumb(it.name)}" alt="" loading="lazy"><span>${it.name}</span></button>`; }));
     const curIt = itemOf(k);
     return `<div class="slot"><h3>${label}<em>${curIt ? curIt.name : 'None'}</em></h3><div class="opts">${opts.join('')}</div></div>`;
@@ -307,7 +308,7 @@ function applyTry() { if (!previewSlug) return; const f = I.find(previewSlug); i
   if (SLOTS.some(s => s[0] === slot)) look[slot] = val; }
 
 $('find').onsubmit = async e => { e.preventDefault(); const k = $('q').value.trim().toLowerCase().replace(/^@+/, ''); if (!k) return;
-  try { const all = await A.roster(); const p = all.find(x => x.handle === k);
+  try { const p = await A.lookup(k);
     if (!p) { $('status').textContent = `@${k} isn't seated yet. Follow the account and your seat appears within a day.`; return; }
     who = p; rank = p.rank; clan = p.clan; $('status').textContent = '';
     history.replaceState(null, '', '?h=' + encodeURIComponent(p.handle) + (previewSlug ? '&try=' + previewSlug : ''));
